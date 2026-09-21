@@ -1,31 +1,26 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    RESQ — Responsive Design System
-   Breakpoints: 1200px (compact), 768px (tablet), 480px (mobile)
+   Breakpoints: 1200px (compact), 900px (small desktop), 768px (tablet), 480px (mobile)
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Global Touch Targets ────────────────────────────────────────────────── */
-@media (max-width: 768px) {
-  button, a, select, input, textarea {
-    min-height: 44px;
+@media screen and (max-width: 768px) {
+  button, a, select {
+    min-height: 40px;
   }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    NAVBAR
    ═══════════════════════════════════════════════════════════════════════════ */
-.resq-navbar {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
 
-@media (max-width: 1200px) {
+@media screen and (max-width: 1200px) {
   .resq-navbar {
     padding: 10px 16px !important;
   }
 }
 
-@media (max-width: 768px) {
+@media screen and (max-width: 900px) {
   .resq-navbar {
     padding: 8px 12px !important;
   }
@@ -39,63 +34,66 @@
     display: none !important;
   }
 
+  .resq-brand-badge {
+    display: none !important;
+  }
+
   .resq-mode-switcher {
     order: 3;
-    width: 100%;
-    justify-content: center;
+    width: 100% !important;
+    justify-content: center !important;
   }
 
   .resq-mode-switcher button {
     flex: 1;
-    justify-content: center;
+    justify-content: center !important;
     font-size: 10px !important;
     padding: 6px 8px !important;
+  }
+
+  .resq-mode-label-full {
+    display: none !important;
+  }
+
+  .resq-mode-label-short {
+    display: inline !important;
   }
 
   .resq-nav-tools {
     gap: 6px !important;
   }
 
-  .resq-nav-tools .resq-pitchdeck-label {
-    display: none;
+  .resq-pitchdeck-label {
+    display: none !important;
   }
 
   .resq-sos-btn {
     padding: 8px 12px !important;
     font-size: 12px !important;
-  }
-
-  /* Mobile hamburger toggle */
-  .resq-mobile-nav-collapsed .resq-mode-switcher,
-  .resq-mobile-nav-collapsed .resq-nav-tools .resq-pitchdeck-btn {
-    display: none !important;
+    letter-spacing: 0.5px !important;
   }
 }
 
-@media (max-width: 480px) {
+.resq-mode-label-short {
+  display: none;
+}
+
+@media screen and (max-width: 480px) {
   .resq-brand-text {
     font-size: 16px !important;
-  }
-
-  .resq-brand-badge {
-    display: none !important;
-  }
-
-  .resq-mode-switcher button span:not(.resq-mode-icon) {
-    display: none;
   }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    APP TAB BAR
    ═══════════════════════════════════════════════════════════════════════════ */
-@media (max-width: 1200px) {
+@media screen and (max-width: 1200px) {
   .resq-toolbar {
     padding: 12px 16px 0 16px !important;
   }
 }
 
-@media (max-width: 768px) {
+@media screen and (max-width: 900px) {
   .resq-toolbar {
     padding: 8px 12px 0 12px !important;
     flex-direction: column !important;
@@ -118,36 +116,36 @@
     display: none !important;
   }
 
-  .resq-tab {
+  .resq-tab.btn-ghost {
     min-width: 40px !important;
     padding: 8px 10px !important;
-    flex-shrink: 0;
+    flex-shrink: 0 !important;
   }
 
-  .resq-status-pills {
+  div.resq-status-pills {
     display: none !important;
   }
 }
 
-@media (max-width: 480px) {
-  .resq-tab {
+@media screen and (max-width: 480px) {
+  .resq-tab.btn-ghost {
     padding: 8px !important;
     min-width: 36px !important;
   }
 }
 
 /* ── Blackout Banner ─────────────────────────────────────────────────────── */
-@media (max-width: 768px) {
+@media screen and (max-width: 900px) {
   .resq-blackout-banner {
     padding: 6px 12px !important;
     font-size: 10px !important;
     flex-wrap: wrap !important;
-    text-align: center;
+    text-align: center !important;
   }
 
   .resq-blackout-banner .resq-blackout-text {
     font-size: 10px !important;
-    line-height: 1.3;
+    line-height: 1.3 !important;
   }
 
   .resq-blackout-banner .tactical-badge {
@@ -156,19 +154,19 @@
 }
 
 /* ── Main Content Area ───────────────────────────────────────────────────── */
-@media (max-width: 1200px) {
+@media screen and (max-width: 1200px) {
   .resq-main {
     padding: 12px 16px 16px 16px !important;
   }
 }
 
-@media (max-width: 768px) {
+@media screen and (max-width: 900px) {
   .resq-main {
     padding: 8px 12px 12px 12px !important;
   }
 }
 
-@media (max-width: 480px) {
+@media screen and (max-width: 480px) {
   .resq-main {
     padding: 6px 8px 8px 8px !important;
   }
@@ -177,30 +175,31 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    EVACUATION MAP
    ═══════════════════════════════════════════════════════════════════════════ */
-@media (max-width: 1200px) {
+@media screen and (max-width: 1200px) {
   .resq-map-layout {
     grid-template-columns: 1fr 320px !important;
   }
 }
 
-@media (max-width: 768px) {
-  .resq-map-layout {
+@media screen and (max-width: 900px) {
+  div.resq-map-layout {
     grid-template-columns: 1fr !important;
     height: auto !important;
     min-height: unset !important;
+    grid-template-rows: 55vh auto !important;
   }
 
-  .resq-map-container {
+  div.resq-map-container {
     height: 55vh !important;
-    min-height: 350px !important;
+    min-height: 300px !important;
   }
 
   .resq-map-sidebar {
-    max-height: 60vh;
-    overflow-y: auto;
+    max-height: 60vh !important;
+    overflow-y: auto !important;
   }
 
-  .resq-map-hud {
+  div.resq-map-hud {
     flex-direction: column !important;
     gap: 6px !important;
     left: 8px !important;
@@ -212,7 +211,7 @@
     flex-wrap: wrap !important;
   }
 
-  .resq-route-legend {
+  div.resq-route-legend {
     display: none !important;
   }
 
@@ -220,7 +219,7 @@
     flex-wrap: wrap !important;
   }
 
-  .resq-flood-bar {
+  div.resq-flood-bar {
     width: calc(100% - 16px) !important;
     left: 8px !important;
     bottom: 8px !important;
@@ -232,17 +231,21 @@
   }
 }
 
-@media (max-width: 480px) {
-  .resq-map-container {
+@media screen and (max-width: 480px) {
+  div.resq-map-layout {
+    grid-template-rows: 45vh auto !important;
+  }
+
+  div.resq-map-container {
     height: 45vh !important;
-    min-height: 280px !important;
+    min-height: 250px !important;
   }
 
   .resq-gps-btn-text {
     display: none !important;
   }
 
-  .resq-flood-bar {
+  div.resq-flood-bar {
     padding: 8px 10px !important;
   }
 }
@@ -250,14 +253,14 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    MESH SIMULATOR
    ═══════════════════════════════════════════════════════════════════════════ */
-@media (max-width: 1200px) {
+@media screen and (max-width: 1200px) {
   .resq-mesh-layout {
     grid-template-columns: 1fr 320px !important;
   }
 }
 
-@media (max-width: 768px) {
-  .resq-mesh-layout {
+@media screen and (max-width: 900px) {
+  div.resq-mesh-layout {
     grid-template-columns: 1fr !important;
   }
 
@@ -267,13 +270,13 @@
     align-items: flex-start !important;
   }
 
-  .resq-mesh-topology {
+  div.resq-mesh-topology {
     height: 280px !important;
   }
 }
 
-@media (max-width: 480px) {
-  .resq-mesh-topology {
+@media screen and (max-width: 480px) {
+  div.resq-mesh-topology {
     height: 220px !important;
   }
 }
@@ -281,19 +284,19 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    RELIEF VAULT
    ═══════════════════════════════════════════════════════════════════════════ */
-@media (max-width: 1200px) {
+@media screen and (max-width: 1200px) {
   .resq-vault-layout {
     grid-template-columns: 1fr 360px !important;
   }
 }
 
-@media (max-width: 768px) {
-  .resq-vault-layout {
+@media screen and (max-width: 900px) {
+  div.resq-vault-layout {
     grid-template-columns: 1fr !important;
   }
 
-  .resq-vault-stats {
-    grid-template-columns: 1fr !important;
+  div.resq-vault-stats {
+    grid-template-columns: 1fr 1fr !important;
   }
 
   .resq-bounty-item {
@@ -303,12 +306,12 @@
   }
 
   .resq-bounty-actions {
-    align-self: flex-end;
+    align-self: flex-end !important;
   }
 }
 
-@media (max-width: 480px) {
-  .resq-vault-stats {
+@media screen and (max-width: 480px) {
+  div.resq-vault-stats {
     grid-template-columns: 1fr !important;
   }
 }
@@ -316,14 +319,14 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    RESPONDER DASHBOARD
    ═══════════════════════════════════════════════════════════════════════════ */
-@media (max-width: 1200px) {
+@media screen and (max-width: 1200px) {
   .resq-responder-layout {
     grid-template-columns: 1fr 360px !important;
   }
 }
 
-@media (max-width: 768px) {
-  .resq-responder-layout {
+@media screen and (max-width: 900px) {
+  div.resq-responder-layout {
     grid-template-columns: 1fr !important;
   }
 
@@ -338,26 +341,26 @@
   }
 
   .resq-sos-item-actions button {
-    width: 100%;
-    justify-content: center;
+    width: 100% !important;
+    justify-content: center !important;
   }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    BITTENSOR SUBNET
    ═══════════════════════════════════════════════════════════════════════════ */
-@media (max-width: 1200px) {
+@media screen and (max-width: 1200px) {
   .resq-bittensor-layout {
     grid-template-columns: 1fr 320px !important;
   }
 }
 
-@media (max-width: 768px) {
-  .resq-bittensor-layout {
+@media screen and (max-width: 900px) {
+  div.resq-bittensor-layout {
     grid-template-columns: 1fr !important;
   }
 
-  .resq-bittensor-stats {
+  div.resq-bittensor-stats {
     grid-template-columns: 1fr 1fr !important;
   }
 
@@ -378,8 +381,8 @@
   }
 }
 
-@media (max-width: 480px) {
-  .resq-bittensor-stats {
+@media screen and (max-width: 480px) {
+  div.resq-bittensor-stats {
     grid-template-columns: 1fr !important;
   }
 }
@@ -387,22 +390,22 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    IMPACT & RESILIENCE
    ═══════════════════════════════════════════════════════════════════════════ */
-@media (max-width: 1200px) {
-  .resq-impact-cycle-grid {
+@media screen and (max-width: 1200px) {
+  div.resq-impact-cycle-grid {
     grid-template-columns: repeat(3, 1fr) !important;
   }
 }
 
-@media (max-width: 768px) {
-  .resq-impact-cycle-grid {
+@media screen and (max-width: 900px) {
+  div.resq-impact-cycle-grid {
     grid-template-columns: repeat(2, 1fr) !important;
   }
 
-  .resq-impact-middle-grid {
+  div.resq-impact-middle-grid {
     grid-template-columns: 1fr !important;
   }
 
-  .resq-impact-benefits-grid {
+  div.resq-impact-benefits-grid {
     grid-template-columns: 1fr !important;
   }
 
@@ -411,11 +414,11 @@
     gap: 10px !important;
   }
 
-  .resq-impact-econ-grid {
+  div.resq-impact-econ-grid {
     grid-template-columns: repeat(3, 1fr) !important;
   }
 
-  .resq-impact-radar-grid {
+  div.resq-impact-radar-grid {
     grid-template-columns: 1fr !important;
   }
 
@@ -429,12 +432,12 @@
   }
 }
 
-@media (max-width: 480px) {
-  .resq-impact-cycle-grid {
+@media screen and (max-width: 480px) {
+  div.resq-impact-cycle-grid {
     grid-template-columns: 1fr 1fr !important;
   }
 
-  .resq-impact-econ-grid {
+  div.resq-impact-econ-grid {
     grid-template-columns: 1fr !important;
   }
 }
@@ -442,18 +445,18 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    RESEARCH REFERENCES
    ═══════════════════════════════════════════════════════════════════════════ */
-@media (max-width: 768px) {
-  .resq-research-grid {
+@media screen and (max-width: 900px) {
+  div.resq-research-grid {
     grid-template-columns: 1fr !important;
   }
 
-  .resq-datasources-grid {
+  div.resq-datasources-grid {
     grid-template-columns: repeat(2, 1fr) !important;
   }
 }
 
-@media (max-width: 480px) {
-  .resq-datasources-grid {
+@media screen and (max-width: 480px) {
+  div.resq-datasources-grid {
     grid-template-columns: 1fr !important;
   }
 }
@@ -461,8 +464,8 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    IPFS SECTION (inline in App.jsx)
    ═══════════════════════════════════════════════════════════════════════════ */
-@media (max-width: 768px) {
-  .resq-ipfs-grid {
+@media screen and (max-width: 900px) {
+  div.resq-ipfs-grid {
     grid-template-columns: 1fr !important;
   }
 
@@ -476,8 +479,8 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    SOS MODAL
    ═══════════════════════════════════════════════════════════════════════════ */
-@media (max-width: 768px) {
-  .resq-sos-modal {
+@media screen and (max-width: 900px) {
+  div.resq-sos-modal {
     width: calc(100vw - 32px) !important;
     max-width: 100% !important;
     padding: 16px !important;
@@ -488,17 +491,17 @@
   }
 }
 
-@media (max-width: 480px) {
-  .resq-sos-modal {
+@media screen and (max-width: 480px) {
+  div.resq-sos-modal {
     width: calc(100vw - 16px) !important;
     padding: 12px !important;
   }
 
-  .resq-sos-triage-grid {
+  div.resq-sos-triage-grid {
     grid-template-columns: 1fr !important;
   }
 
-  .resq-sos-telemetry-grid {
+  div.resq-sos-telemetry-grid {
     grid-template-columns: 1fr !important;
   }
 }
@@ -506,8 +509,8 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    SLIDE DECK MODAL
    ═══════════════════════════════════════════════════════════════════════════ */
-@media (max-width: 768px) {
-  .resq-deck-modal {
+@media screen and (max-width: 900px) {
+  div.resq-deck-modal {
     width: calc(100vw - 24px) !important;
     max-width: 100% !important;
     padding: 16px !important;
@@ -526,45 +529,45 @@
 
   .resq-deck-dots {
     order: -1;
-    width: 100%;
+    width: 100% !important;
     justify-content: center !important;
   }
 
   .resq-deck-nav button {
-    width: 100%;
-    justify-content: center;
+    width: 100% !important;
+    justify-content: center !important;
   }
 
   /* Slide 1 grids */
-  .resq-deck-slide1-grid {
+  div.resq-deck-slide1-grid {
     grid-template-columns: repeat(2, 1fr) !important;
   }
 
   /* Slide 2 grids */
-  .resq-deck-slide2-grid {
+  div.resq-deck-slide2-grid {
     grid-template-columns: 1fr !important;
   }
 
-  .resq-deck-innovations-grid {
+  div.resq-deck-innovations-grid {
     grid-template-columns: 1fr 1fr !important;
   }
 
-  .resq-deck-arch-grid {
+  div.resq-deck-arch-grid {
     grid-template-columns: 1fr !important;
     gap: 8px !important;
   }
 
   /* Slide 3 grids */
-  .resq-deck-slide3-grid {
+  div.resq-deck-slide3-grid {
     grid-template-columns: 1fr !important;
   }
 
-  .resq-deck-techstack {
+  div.resq-deck-techstack {
     grid-template-columns: 1fr !important;
   }
 
   /* Slide 4 grids */
-  .resq-deck-slide4-grid {
+  div.resq-deck-slide4-grid {
     grid-template-columns: 1fr !important;
   }
 
@@ -573,26 +576,26 @@
   }
 
   /* Slide 5 grids */
-  .resq-deck-cycle-grid {
+  div.resq-deck-cycle-grid {
     grid-template-columns: repeat(2, 1fr) !important;
   }
 
-  .resq-deck-impact-grid {
+  div.resq-deck-impact-grid {
     grid-template-columns: 1fr !important;
   }
 
   /* Slide 6 grids */
-  .resq-deck-papers-grid {
+  div.resq-deck-papers-grid {
     grid-template-columns: 1fr !important;
   }
 
-  .resq-deck-ds-grid {
+  div.resq-deck-ds-grid {
     grid-template-columns: repeat(2, 1fr) !important;
   }
 }
 
-@media (max-width: 480px) {
-  .resq-deck-modal {
+@media screen and (max-width: 480px) {
+  div.resq-deck-modal {
     width: 100vw !important;
     height: 100vh !important;
     max-height: 100vh !important;
@@ -600,19 +603,19 @@
     padding: 12px !important;
   }
 
-  .resq-deck-slide1-grid {
+  div.resq-deck-slide1-grid {
     grid-template-columns: 1fr !important;
   }
 
-  .resq-deck-innovations-grid {
+  div.resq-deck-innovations-grid {
     grid-template-columns: 1fr !important;
   }
 
-  .resq-deck-cycle-grid {
+  div.resq-deck-cycle-grid {
     grid-template-columns: 1fr !important;
   }
 
-  .resq-deck-ds-grid {
+  div.resq-deck-ds-grid {
     grid-template-columns: 1fr !important;
   }
 }
@@ -620,15 +623,15 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    HAZARD MODAL (inline in EvacuationMap)
    ═══════════════════════════════════════════════════════════════════════════ */
-@media (max-width: 768px) {
-  .resq-hazard-modal {
+@media screen and (max-width: 900px) {
+  div.resq-hazard-modal {
     width: calc(100vw - 32px) !important;
     max-width: 100% !important;
   }
 }
 
-@media (max-width: 480px) {
-  .resq-hazard-modal {
+@media screen and (max-width: 480px) {
+  div.resq-hazard-modal {
     width: calc(100vw - 16px) !important;
     padding: 16px !important;
   }

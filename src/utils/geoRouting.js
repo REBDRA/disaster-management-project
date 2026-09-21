@@ -80,10 +80,87 @@ export const HIGH_GROUND_SHELTERS_BENGAL = [
   }
 ];
 
+export const HIGH_GROUND_SHELTERS_BIHAR = [
+  {
+    id: 'shelter-bihar-1',
+    name: 'Patna High Embankment Relief Hub',
+    coords: [25.620, 85.140],
+    elevation: 58,
+    capacity: 2500,
+    currentOccupants: 810,
+    resources: ['SDRF Quick Response Boats', 'Solar Mesh Node', 'Medical Triage'],
+    status: 'ACTIVE_HIGH_GROUND',
+    cidData: 'ipfs://bafkreibpat1...patna1'
+  },
+  {
+    id: 'shelter-bihar-2',
+    name: 'Rajvanshi Nagar Elevated Shelter',
+    coords: [25.608, 85.115],
+    elevation: 62,
+    capacity: 1800,
+    currentOccupants: 540,
+    resources: ['Ham Radio Uplink', 'Emergency Food Stock', 'Power Generator'],
+    status: 'ACTIVE_HIGH_GROUND',
+    cidData: 'ipfs://bafkreibpat2...patna2'
+  },
+  {
+    id: 'shelter-bihar-3',
+    name: 'Danapur Cantonment NDRF Command',
+    coords: [25.635, 85.045],
+    elevation: 65,
+    capacity: 3500,
+    currentOccupants: 1100,
+    resources: ['NDRF Base Camp', 'Helicopter Air-Drop Zone', 'Satellite Comms'],
+    status: 'ACTIVE_HIGH_GROUND',
+    cidData: 'ipfs://bafkreibpat3...patna3'
+  }
+];
+
+export const REGIONAL_PACKS = [
+  {
+    id: 'assam-guwahati',
+    name: 'Assam — Guwahati / Brahmaputra Basin',
+    center: [26.180, 91.750],
+    zoom: 13,
+    baseRiverElevation: 46,
+    sizeMb: 42.8,
+    demFormat: 'SRTM 30m GeoPackage (.gpkg)',
+    vectorTiles: 'OpenStreetMap Offline PBF (SQLite)',
+    status: 'PRE_CACHED_100',
+    shelters: HIGH_GROUND_SHELTERS_ASSAM
+  },
+  {
+    id: 'bengal-kolkata',
+    name: 'West Bengal — Kolkata / Howrah Riverfront',
+    center: [22.650, 88.355],
+    zoom: 13,
+    baseRiverElevation: 12,
+    sizeMb: 38.4,
+    demFormat: 'SRTM 30m GeoPackage (.gpkg)',
+    vectorTiles: 'OpenStreetMap Offline PBF (SQLite)',
+    status: 'PRE_CACHED_100',
+    shelters: HIGH_GROUND_SHELTERS_BENGAL
+  },
+  {
+    id: 'bihar-patna',
+    name: 'Bihar — Patna / Ganga Inundation Zone',
+    center: [25.615, 85.130],
+    zoom: 13,
+    baseRiverElevation: 49,
+    sizeMb: 45.1,
+    demFormat: 'SRTM 30m GeoPackage (.gpkg)',
+    vectorTiles: 'OpenStreetMap Offline PBF (SQLite)',
+    status: 'PRE_CACHED_100',
+    shelters: HIGH_GROUND_SHELTERS_BIHAR
+  }
+];
+
 // Helper to get shelters based on current coordinates
 export function getRegionalShelters(coords = DEFAULT_USER_POS) {
   const isNearBengal = Math.abs(coords[0] - 22.6) < 1.0 && Math.abs(coords[1] - 88.35) < 1.0;
   if (isNearBengal) return HIGH_GROUND_SHELTERS_BENGAL;
+  const isNearBihar = Math.abs(coords[0] - 25.6) < 1.0 && Math.abs(coords[1] - 85.1) < 1.0;
+  if (isNearBihar) return HIGH_GROUND_SHELTERS_BIHAR;
   return HIGH_GROUND_SHELTERS_ASSAM;
 }
 
@@ -282,8 +359,6 @@ export function computeSafeEvacuationRoute(waterLevelMeters = 0, selectedShelter
       ];
       distanceKm = 5.4;
       avgElevation = 32.0;
-      routeNotes.push('🛡️ Inland evacuation route completely away from Hooghly riverbank');
-      routeNotes.push('✅ Broad elevated expressway corridor');
     } else {
       // Default West Bengal shelter: Bally-Belur Inland Relief Station
       pathCoords = [
@@ -295,6 +370,44 @@ export function computeSafeEvacuationRoute(waterLevelMeters = 0, selectedShelter
       avgElevation = 26.5;
       routeNotes.push('📍 Rapid local evacuation to Belur high-ground sanctuary');
       routeNotes.push('✅ Avoids low-lying riverfront ghats');
+    }
+  } else if (isNearBihar) {
+    // Bihar (Patna, Danapur, Ganga Inundation Basin)
+    const uLat = userStartPos[0];
+    const uLon = userStartPos[1];
+
+    if (selectedShelterId === 'shelter-bihar-2') {
+      pathCoords = [
+        [uLat, uLon],
+        [25.6140, 85.1250],
+        [25.6100, 85.1200],
+        [25.6080, 85.1150]
+      ];
+      distanceKm = 2.4;
+      avgElevation = 62.0;
+      routeNotes.push('🏛️ Navigating to Rajvanshi Nagar elevated relief zone');
+      routeNotes.push('✅ Bypass Bailey Road low depression');
+    } else if (selectedShelterId === 'shelter-bihar-3') {
+      pathCoords = [
+        [uLat, uLon],
+        [25.6200, 85.1000],
+        [25.6280, 85.0700],
+        [25.6350, 85.0450]
+      ];
+      distanceKm = 6.2;
+      avgElevation = 65.0;
+      routeNotes.push('🛡️ Safe corridor to Danapur NDRF Cantonment Camp');
+      routeNotes.push('✅ High elevated cantonment embankment with helipad');
+    } else {
+      pathCoords = [
+        [uLat, uLon],
+        [25.6180, 85.1350],
+        [25.6200, 85.1400]
+      ];
+      distanceKm = 1.8;
+      avgElevation = 58.5;
+      routeNotes.push('📍 Rapid local evacuation to Patna High Embankment Hub');
+      routeNotes.push('✅ Elevated river embankment road (dry & clear)');
     }
   } else {
     // Dynamic corridor calculated from user's live real-world GPS fix anywhere else

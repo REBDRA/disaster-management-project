@@ -150,7 +150,29 @@ export default function EvacuationMap({
 
     mapInstanceRef.current = map;
 
+    // Trigger invalidateSize after initial render
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 250);
+
+    // Watch container resize for responsive adaptation
+    let resizeObserver = null;
+    if (window.ResizeObserver && mapContainerRef.current) {
+      resizeObserver = new ResizeObserver(() => {
+        map.invalidateSize();
+      });
+      resizeObserver.observe(mapContainerRef.current);
+    }
+
+    const handleWindowResize = () => {
+      map.invalidateSize();
+    };
+    window.addEventListener('resize', handleWindowResize);
+
     return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', handleWindowResize);
+      if (resizeObserver) resizeObserver.disconnect();
       map.remove();
       mapInstanceRef.current = null;
     };

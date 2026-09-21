@@ -117,7 +117,8 @@ export default function Navbar({
             }}
           >
             <Cloud size={14} />
-            Cloud / RPC Mode
+            <span className="resq-mode-label-full">Cloud / RPC Mode</span>
+            <span className="resq-mode-label-short">Cloud</span>
           </button>
           <button
             onClick={() => !isBlackoutMode && toggleMode()}
@@ -138,7 +139,8 @@ export default function Navbar({
             }}
           >
             <CloudOff size={14} />
-            Blackout Mesh Mode (P2P Zero-Cellular)
+            <span className="resq-mode-label-full">Blackout Mesh Mode (P2P Zero-Cellular)</span>
+            <span className="resq-mode-label-short">Blackout Mesh</span>
           </button>
         </div>
 

@@ -128,11 +128,13 @@ export default function App() {
             <button
               key={tab.id}
               onClick={() => handleTabChange(tab.id)}
+              title={tab.label}
               className={`btn-ghost resq-tab ${activeTab === tab.id ? 'active' : ''}`}
               style={{
                 fontSize: 12,
                 fontWeight: activeTab === tab.id ? 700 : 500,
-                borderBottom: activeTab === tab.id ? '2px solid var(--accent-cyan)' : '2px solid transparent'
+                borderBottom: activeTab === tab.id ? '2px solid var(--accent-cyan)' : '2px solid transparent',
+                whiteSpace: 'nowrap'
               }}
             >
               {tab.icon}
