@@ -84,7 +84,7 @@ export default function SosModal({ isOpen, onClose, walletAddress, soundEnabled,
       justifyContent: 'center',
       padding: 16
     }}>
-      <div className="glass-panel" style={{
+      <div className="glass-panel resq-sos-modal" style={{
         width: 520,
         maxHeight: '90vh',
         overflowY: 'auto',
@@ -108,7 +108,7 @@ export default function SosModal({ isOpen, onClose, walletAddress, soundEnabled,
               <ShieldAlert size={20} color="#ff2a5f" />
             </div>
             <div>
-              <div style={{ fontSize: 16, fontWeight: 800, color: '#ffffff', letterSpacing: 0.5 }}>
+              <div className="resq-sos-header-title" style={{ fontSize: 16, fontWeight: 800, color: '#ffffff', letterSpacing: 0.5 }}>
                 BROADCAST EMERGENCY SOS BEACON
               </div>
               <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
@@ -134,7 +134,7 @@ export default function SosModal({ isOpen, onClose, walletAddress, soundEnabled,
                 SELECT EMERGENCY CLASSIFICATION
               </label>
               
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              <div className="resq-sos-triage-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 {[
                   { id: 'CRITICAL_LIFE', label: '🚨 Life Threatening', desc: 'Medical emergency / injured' },
                   { id: 'TRAPPED_FLOOD', label: '🌊 Trapped by Water', desc: 'Water entering structure' },
@@ -195,7 +195,7 @@ export default function SosModal({ isOpen, onClose, walletAddress, soundEnabled,
               <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                 BEACON TELEMETRY PAYLOAD (TO BE SIGNED)
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 11, color: 'var(--text-secondary)' }}>
+              <div className="resq-sos-telemetry-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 11, color: 'var(--text-secondary)' }}>
                 <span>📍 GPS: {liveGps[0].toFixed(4)}°N, {liveGps[1].toFixed(4)}°E {isGpsLive ? '(Live Fix)' : '(Demo)'}</span>
                 <span>⛰️ DEM Elevation: 49.2m</span>
                 <span>🔋 Battery: 84%</span>

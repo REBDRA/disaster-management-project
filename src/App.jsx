@@ -81,7 +81,7 @@ export default function App() {
 
       {/* Blackout Mode Tactical Notice Banner */}
       {isBlackoutMode && (
-        <div style={{
+        <div className="resq-blackout-banner" style={{
           background: 'linear-gradient(90deg, #ff2a5f 0%, #ff5e36 100%)',
           color: '#ffffff',
           padding: '8px 24px',
@@ -94,7 +94,7 @@ export default function App() {
           boxShadow: '0 4px 20px rgba(255, 42, 95, 0.4)'
         }}>
           <CloudOff size={16} />
-          <span>CELLULAR & POWER GRID BLACKOUT ACTIVE — Dual-Engine switched to On-Device Elevation Routing & P2P Mesh Gossip Relay</span>
+          <span className="resq-blackout-text">CELLULAR & POWER GRID BLACKOUT ACTIVE — Dual-Engine switched to On-Device Elevation Routing & P2P Mesh Gossip Relay</span>
           <span className="tactical-badge" style={{ background: 'rgba(0,0,0,0.3)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.4)' }}>
             ZERO CLOUD DEPENDENCY
           </span>
@@ -102,7 +102,7 @@ export default function App() {
       )}
 
       {/* Primary Tab Navigation & Telemetry Toolbar */}
-      <div style={{
+      <div className="resq-toolbar" style={{
         maxWidth: 1600,
         width: '100%',
         margin: '0 auto',
@@ -114,7 +114,7 @@ export default function App() {
         gap: 12
       }}>
         {/* Navigation Tabs */}
-        <div style={{ display: 'flex', gap: 8, background: 'rgba(0,0,0,0.4)', padding: 4, borderRadius: 10, border: '1px solid var(--border-subtle)' }}>
+        <div className="resq-tab-bar" style={{ display: 'flex', gap: 8, background: 'rgba(0,0,0,0.4)', padding: 4, borderRadius: 10, border: '1px solid var(--border-subtle)' }}>
           {[
             { id: 'MAP', label: 'Adaptive Evacuation Map', icon: <Map size={15} /> },
             { id: 'MESH', label: 'DePIN P2P Mesh Relay', icon: <Radio size={15} /> },
@@ -128,7 +128,7 @@ export default function App() {
             <button
               key={tab.id}
               onClick={() => handleTabChange(tab.id)}
-              className={`btn-ghost ${activeTab === tab.id ? 'active' : ''}`}
+              className={`btn-ghost resq-tab ${activeTab === tab.id ? 'active' : ''}`}
               style={{
                 fontSize: 12,
                 fontWeight: activeTab === tab.id ? 700 : 500,
@@ -136,13 +136,13 @@ export default function App() {
               }}
             >
               {tab.icon}
-              <span>{tab.label}</span>
+              <span className="resq-tab-label">{tab.label}</span>
             </button>
           ))}
         </div>
 
         {/* Status Pills */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div className="resq-status-pills" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div className="code-pill">
             SRTM DEM: 30m HIGH-RES
           </div>
@@ -156,7 +156,7 @@ export default function App() {
       </div>
 
       {/* Main View Area */}
-      <main style={{ maxWidth: 1600, width: '100%', margin: '0 auto', padding: '16px 24px 24px 24px', flex: 1 }}>
+      <main className="resq-main" style={{ maxWidth: 1600, width: '100%', margin: '0 auto', padding: '16px 24px 24px 24px', flex: 1 }}>
         {activeTab === 'MAP' && (
           <EvacuationMap
             isBlackoutMode={isBlackoutMode}
@@ -209,7 +209,7 @@ export default function App() {
 
         {activeTab === 'IPFS' && (
           <div className="glass-panel" style={{ padding: 24 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+            <div className="resq-ipfs-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
               <div>
                 <div style={{ fontSize: 18, fontWeight: 700, color: '#ffffff', display: 'flex', alignItems: 'center', gap: 8 }}>
                   <Database size={20} color="var(--accent-cyan)" />
@@ -225,7 +225,7 @@ export default function App() {
               </span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+            <div className="resq-ipfs-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
               {IPFS_MAP_PACKS.map((pack, idx) => (
                 <div
                   key={idx}

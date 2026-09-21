@@ -38,7 +38,7 @@ export default function ResearchReferences() {
           <span className="code-pill">SLIDE 6 VALIDATED</span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
+        <div className="resq-research-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
           {RESEARCH_PAPERS.map((paper) => (
             <div
               key={paper.id}
@@ -91,7 +91,7 @@ export default function ResearchReferences() {
           <span>DATA SOURCES & INGESTION PIPELINE</span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+        <div className="resq-datasources-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
           {DATA_SOURCES_INFO.map((ds, idx) => (
             <div
               key={idx}

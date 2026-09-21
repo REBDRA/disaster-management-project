@@ -52,7 +52,7 @@ export default function SlideDeckModal({ isOpen, onClose, soundEnabled }) {
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+          <div className="resq-deck-slide1-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
             <div style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid var(--border-subtle)', padding: 16, borderRadius: 10 }}>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700 }}>THEME</div>
               <div style={{ fontSize: 14, fontWeight: 800, color: '#ff4d79', marginTop: 6 }}>DISASTER MANAGEMENT</div>
@@ -86,7 +86,7 @@ export default function SlideDeckModal({ isOpen, onClose, soundEnabled }) {
       content: (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* Problem vs Solution */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <div className="resq-deck-slide2-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
             <div style={{ background: 'rgba(255, 42, 95, 0.08)', border: '1px solid rgba(255, 42, 95, 0.35)', borderRadius: 10, padding: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#ff4d79', fontWeight: 800, fontSize: 14, marginBottom: 6 }}>
                 <CloudOff size={18} />
@@ -109,7 +109,7 @@ export default function SlideDeckModal({ isOpen, onClose, soundEnabled }) {
           </div>
 
           {/* Innovations & Uniqueness */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+          <div className="resq-deck-innovations-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
             {[
               { title: 'Zero-Hardware P2P Mesh', desc: 'Runs directly on consumer phone BLE/Wi-Fi with offline consensus' },
               { title: 'Dynamic Route Confidence', desc: 'Real-time hazard scoring and stochastic corridor reliability' },
@@ -129,7 +129,7 @@ export default function SlideDeckModal({ isOpen, onClose, soundEnabled }) {
               PROPOSED SOLUTION ARCHITECTURE (INPUTS ➔ PROCESSING ➔ OUTPUTS)
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: 12, alignItems: 'center' }}>
+            <div className="resq-deck-arch-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: 12, alignItems: 'center' }}>
               {/* Inputs */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textAlign: 'center' }}>INPUTS</div>
@@ -171,7 +171,7 @@ export default function SlideDeckModal({ isOpen, onClose, soundEnabled }) {
       title: 'TECHNICAL APPROACH & SYSTEM FLOW',
       subtitle: 'Complete Technology Stack & 4-Step End-to-End Implementation Flow',
       content: (
-        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 16 }}>
+        <div className="resq-deck-slide3-grid" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 16 }}>
           {/* Tech Stack Matrix (8 Boxes) */}
           <div>
             <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--accent-cyan)', letterSpacing: 0.5, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -179,7 +179,7 @@ export default function SlideDeckModal({ isOpen, onClose, soundEnabled }) {
               <span>TECHNOLOGY STACK</span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 11 }}>
+            <div className="resq-deck-techstack" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 11 }}>
               <div style={{ background: 'rgba(0,0,0,0.4)', padding: 8, borderRadius: 6, border: '1px solid var(--border-subtle)' }}>
                 <div style={{ color: 'var(--accent-cyan)', fontWeight: 700 }}>MOBILE & MAPS</div>
                 <div style={{ color: 'var(--text-secondary)', marginTop: 2 }}>• Flutter / React<br/>• MapLibre GL<br/>• OpenStreetMap</div>
@@ -257,7 +257,7 @@ export default function SlideDeckModal({ isOpen, onClose, soundEnabled }) {
       title: 'FEASIBILITY AND VIABILITY',
       subtitle: 'Technical Feasibility, Offline Resilience Pipeline, and Economic Viability Chart',
       content: (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div className="resq-deck-slide4-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           {/* Left: Technical Feasibility & Offline Resilience */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ background: 'rgba(0,0,0,0.4)', padding: 14, borderRadius: 10, border: '1px solid var(--border-subtle)' }}>
@@ -276,7 +276,7 @@ export default function SlideDeckModal({ isOpen, onClose, soundEnabled }) {
               <div style={{ fontSize: 11, fontWeight: 800, color: '#ff4d79', marginBottom: 8, textAlign: 'center' }}>
                 OFFLINE RESILIENCE PIPELINE
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, textAlign: 'center' }}>
+              <div className="resq-deck-offline-flow" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, textAlign: 'center' }}>
                 <div style={{ background: 'rgba(0,0,0,0.5)', padding: '8px 10px', borderRadius: 6, flex: 1, border: '1px solid rgba(255, 42, 95, 0.5)' }}>
                   <div style={{ fontSize: 10, fontWeight: 800, color: '#ff4d79' }}>NETWORK FAIL</div>
                   <div style={{ fontSize: 8, color: 'var(--text-muted)', marginTop: 2 }}>Towers knocked out</div>
@@ -351,7 +351,7 @@ export default function SlideDeckModal({ isOpen, onClose, soundEnabled }) {
               THE ULTIMATE RESILIENCE CYCLE (WHO IT PROTECTS)
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 6, textAlign: 'center' }}>
+            <div className="resq-deck-cycle-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 6, textAlign: 'center' }}>
               {[
                 { step: '1. HAZARD DETECTION', note: 'Automated hub/beacon sensors detect critical flood condition' },
                 { step: '1.5 DATA TRANSMISSION', note: 'Signal mesh relays telemetry peer-to-peer' },
@@ -369,7 +369,7 @@ export default function SlideDeckModal({ isOpen, onClose, soundEnabled }) {
           </div>
 
           {/* Middle: Estimated Impact Progress Bars */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div className="resq-deck-impact-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div style={{ background: 'rgba(0,0,0,0.3)', padding: 12, borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: '#ffffff', marginBottom: 8 }}>
                 ESTIMATED IMPACT (SIMULATED DATA)
@@ -438,7 +438,7 @@ export default function SlideDeckModal({ isOpen, onClose, soundEnabled }) {
       content: (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {/* 4 Research Papers */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+          <div className="resq-deck-papers-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
             {RESEARCH_PAPERS.map((paper) => (
               <div
                 key={paper.id}
@@ -484,7 +484,7 @@ export default function SlideDeckModal({ isOpen, onClose, soundEnabled }) {
               DATA SOURCES INGESTED BY RESQ
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6, textAlign: 'center' }}>
+            <div className="resq-deck-ds-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6, textAlign: 'center' }}>
               {DATA_SOURCES_INFO.map((ds, idx) => (
                 <div key={idx} style={{ background: 'rgba(0,0,0,0.5)', padding: 6, borderRadius: 6, border: '1px solid var(--border-subtle)' }}>
                   <div style={{ fontSize: 9, fontWeight: 800, color: 'var(--accent-cyan)' }}>{ds.name}</div>
@@ -515,7 +515,7 @@ export default function SlideDeckModal({ isOpen, onClose, soundEnabled }) {
       justifyContent: 'center',
       padding: 20
     }}>
-      <div className="glass-panel" style={{
+      <div className="glass-panel resq-deck-modal" style={{
         width: 960,
         maxWidth: '96vw',
         maxHeight: '92vh',
@@ -528,7 +528,7 @@ export default function SlideDeckModal({ isOpen, onClose, soundEnabled }) {
         overflowY: 'auto'
       }}>
         {/* Top bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, borderBottom: '1px solid var(--border-subtle)', paddingBottom: 12 }}>
+        <div className="resq-deck-topbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, borderBottom: '1px solid var(--border-subtle)', paddingBottom: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <BookOpen size={20} color="var(--accent-cyan)" />
             <div>
@@ -564,7 +564,7 @@ export default function SlideDeckModal({ isOpen, onClose, soundEnabled }) {
         </div>
 
         {/* Navigation Bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-subtle)', paddingTop: 14 }}>
+        <div className="resq-deck-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-subtle)', paddingTop: 14 }}>
           <button
             onClick={() => {
               if (currentSlide > 0) {
@@ -581,7 +581,7 @@ export default function SlideDeckModal({ isOpen, onClose, soundEnabled }) {
           </button>
 
           {/* Dots & Jump to Slide */}
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <div className="resq-deck-dots" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             {slides.map((s, i) => (
               <button
                 key={i}

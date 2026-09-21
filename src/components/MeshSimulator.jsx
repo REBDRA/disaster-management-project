@@ -108,11 +108,11 @@ export default function MeshSimulator({ isBlackoutMode, soundEnabled }) {
   };
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 16 }}>
+    <div className="resq-mesh-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 16 }}>
       
       {/* Topology Canvas & Controls */}
       <div className="glass-panel" style={{ padding: 20, display: 'flex', flexDirection: 'column' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div className="resq-mesh-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Radio size={20} color="var(--accent-cyan)" />
@@ -142,7 +142,7 @@ export default function MeshSimulator({ isBlackoutMode, soundEnabled }) {
         </div>
 
         {/* Dynamic Topology Node Visualizer */}
-        <div style={{
+        <div className="resq-mesh-topology" style={{
           position: 'relative',
           height: 380,
           background: 'radial-gradient(ellipse at center, rgba(0, 242, 254, 0.04) 0%, rgba(7, 10, 18, 0.95) 100%)',

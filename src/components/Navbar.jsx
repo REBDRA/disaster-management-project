@@ -31,7 +31,7 @@ export default function Navbar({
   };
 
   return (
-    <header style={{
+    <header className="resq-navbar" style={{
       position: 'sticky',
       top: 0,
       zIndex: 1000,
@@ -40,7 +40,7 @@ export default function Navbar({
       borderBottom: '1px solid var(--border-subtle)',
       padding: '12px 24px'
     }}>
-      <div style={{
+      <div className="resq-navbar-inner" style={{
         maxWidth: 1600,
         margin: '0 auto',
         display: 'flex',
@@ -65,7 +65,7 @@ export default function Navbar({
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{
+              <span className="resq-brand-text" style={{
                 fontSize: 20,
                 fontWeight: 800,
                 letterSpacing: 1.2,
@@ -75,11 +75,11 @@ export default function Navbar({
               }}>
                 RESQ
               </span>
-              <span className="tactical-badge badge-cyan">
+              <span className="tactical-badge badge-cyan resq-brand-badge">
                 INTELLIGENCE v2.0
               </span>
             </div>
-            <div style={{ fontSize: 11, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div className="resq-brand-tagline" style={{ fontSize: 11, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
               <span>Adaptive Dual-Engine Evacuation Intelligence</span>
               <span>•</span>
               <span style={{ color: 'var(--accent-emerald)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
@@ -90,7 +90,7 @@ export default function Navbar({
         </div>
 
         {/* Tactical Dual-Mode Switcher */}
-        <div style={{
+        <div className="resq-mode-switcher" style={{
           display: 'flex',
           alignItems: 'center',
           background: 'rgba(0, 0, 0, 0.4)',
@@ -143,10 +143,10 @@ export default function Navbar({
         </div>
 
         {/* Right Tools: Web3 Pitch Deck, Sound, Wallet, SOS */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div className="resq-nav-tools" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {/* Pitch Deck button */}
           <button 
-            className="btn-ghost"
+            className="btn-ghost resq-pitchdeck-btn"
             onClick={() => {
               if (soundEnabled) playSound('click');
               onOpenDeck();
@@ -154,7 +154,7 @@ export default function Navbar({
             title="View Hackathon Pitch Deck"
           >
             <BookOpen size={15} color="var(--accent-cyan)" />
-            <span>Pitch Deck</span>
+            <span className="resq-pitchdeck-label">Pitch Deck</span>
           </button>
 
           {/* Sound Toggle */}
@@ -177,10 +177,10 @@ export default function Navbar({
               if (soundEnabled) playSound('sos');
               onOpenSos();
             }}
-            className="btn-sos"
+            className="btn-sos resq-sos-btn"
           >
             <ShieldAlert size={18} />
-            ONE-TAP SOS
+            <span>SOS</span>
           </button>
         </div>
       </div>

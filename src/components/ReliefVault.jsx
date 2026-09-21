@@ -85,7 +85,7 @@ export default function ReliefVault({ soundEnabled, walletConnected, onConnectWa
   };
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: 16 }}>
+    <div className="resq-vault-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: 16 }}>
       
       {/* Left Column: Vault Overview & On-Chain Bounties */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -121,7 +121,7 @@ export default function ReliefVault({ soundEnabled, walletConnected, onConnectWa
             </span>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+          <div className="resq-vault-stats" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
             <div style={{ background: 'rgba(0,0,0,0.35)', padding: 14, borderRadius: 10, border: '1px solid var(--border-subtle)' }}>
               <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>TOTAL POOL BALANCE</div>
               <div style={{ fontSize: 22, fontWeight: 800, color: '#ffffff', marginTop: 4 }}>
@@ -182,6 +182,7 @@ export default function ReliefVault({ soundEnabled, walletConnected, onConnectWa
                   justifyContent: 'space-between',
                   alignItems: 'center'
                 }}
+                className="resq-bounty-item"
               >
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -193,7 +194,7 @@ export default function ReliefVault({ soundEnabled, walletConnected, onConnectWa
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div className="resq-bounty-actions" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--accent-emerald)' }}>
                       {b.reward}

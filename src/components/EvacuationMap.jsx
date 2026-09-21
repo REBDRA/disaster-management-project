@@ -417,15 +417,15 @@ export default function EvacuationMap({
   const selectedShelter = activeShelters.find(s => s.id === selectedShelterId) || activeShelters[0];
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 16, height: 'calc(100vh - 120px)', minHeight: 650 }}>
+    <div className="resq-map-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 16, height: 'calc(100vh - 120px)', minHeight: 650 }}>
       {/* Map Column */}
-      <div style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-subtle)', boxShadow: '0 8px 30px rgba(0,0,0,0.5)' }}>
+      <div className="resq-map-container" style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-subtle)', boxShadow: '0 8px 30px rgba(0,0,0,0.5)' }}>
         
         {/* Leaflet Container */}
         <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />
 
         {/* Tactical HUD Header Bar over Map */}
-        <div style={{
+        <div className="resq-map-hud" style={{
           position: 'absolute',
           top: 16,
           left: 16,
@@ -438,7 +438,7 @@ export default function EvacuationMap({
           gap: 10,
           flexWrap: 'wrap'
         }}>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <div className="resq-map-hud-left" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
             <div className="glass-panel" style={{ padding: '8px 16px', pointerEvents: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
               <Compass size={18} color="var(--accent-cyan)" />
               <div>
@@ -450,7 +450,7 @@ export default function EvacuationMap({
             </div>
 
             {/* Route Legend Indicator */}
-            <div className="glass-panel" style={{
+            <div className="resq-route-legend glass-panel" style={{
               padding: '8px 14px',
               pointerEvents: 'auto',
               display: 'flex',
@@ -466,7 +466,7 @@ export default function EvacuationMap({
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: 8, pointerEvents: 'auto', flexWrap: 'wrap' }}>
+          <div className="resq-map-hud-right" style={{ display: 'flex', gap: 8, pointerEvents: 'auto', flexWrap: 'wrap' }}>
             {/* Auto GPS Location Button */}
             <button
               onClick={triggerAutoLocation}
@@ -480,7 +480,7 @@ export default function EvacuationMap({
               title="Automatically detect current live GPS location"
             >
               <Crosshair size={15} className={gpsStatus === 'LOCATING' ? 'radar-ping' : ''} />
-              <span>
+              <span className="resq-gps-btn-text">
                 {gpsStatus === 'LOCATING' 
                   ? 'Detecting GPS...' 
                   : gpsStatus === 'SYNCED' 
@@ -519,7 +519,7 @@ export default function EvacuationMap({
         </div>
 
         {/* Dynamic Water Level / Flood Simulator Floating Bar */}
-        <div style={{
+        <div className="resq-flood-bar" style={{
           position: 'absolute',
           bottom: 20,
           left: 20,
@@ -560,7 +560,7 @@ export default function EvacuationMap({
             }}
           />
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
+          <div className="resq-flood-labels" style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
             <span>0m (Baseline)</span>
             <span>+4m (Riverbank Breach)</span>
             <span>+8m (Flash Inundation)</span>
@@ -570,7 +570,7 @@ export default function EvacuationMap({
       </div>
 
       {/* Side Intelligence & Adaptive Routing Telemetry */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}>
+      <div className="resq-map-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}>
         
         {/* Safe Route Confidence Card */}
         <div className="glass-panel" style={{ padding: 18, border: '1px solid var(--border-cyan)' }}>
@@ -726,7 +726,7 @@ export default function EvacuationMap({
           alignItems: 'center',
           justifyContent: 'center'
         }}>
-          <div className="glass-panel" style={{ width: 440, padding: 24, border: '1px solid rgba(255, 42, 95, 0.4)' }}>
+          <div className="glass-panel resq-hazard-modal" style={{ width: 440, padding: 24, border: '1px solid rgba(255, 42, 95, 0.4)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <div style={{ fontSize: 16, fontWeight: 700, color: '#ffffff', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <AlertTriangle color="#ff2a5f" />

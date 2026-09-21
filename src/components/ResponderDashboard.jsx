@@ -79,7 +79,7 @@ export default function ResponderDashboard({ soundEnabled }) {
   };
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: 16 }}>
+    <div className="resq-responder-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: 16 }}>
       
       {/* Live SOS Distress Triage Queue */}
       <div className="glass-panel" style={{ padding: 20 }}>
@@ -116,7 +116,7 @@ export default function ResponderDashboard({ soundEnabled }) {
                   padding: 16
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div className="resq-sos-item-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <span className="code-pill" style={{ color: '#ffffff' }}>{item.id}</span>
@@ -156,7 +156,7 @@ export default function ResponderDashboard({ soundEnabled }) {
                   </div>
 
                   {item.status === 'PENDING_DISPATCH' && (
-                    <div style={{ display: 'flex', gap: 8 }}>
+                    <div className="resq-sos-item-actions" style={{ display: 'flex', gap: 8 }}>
                       <button
                         onClick={() => handleDispatch(item.id, 'SDRF Inflatable Motorboat #4')}
                         className="btn-ghost"

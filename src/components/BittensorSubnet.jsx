@@ -34,14 +34,14 @@ export default function BittensorSubnet({ soundEnabled }) {
   };
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 16 }}>
+    <div className="resq-bittensor-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 16 }}>
       
       {/* Left Column: Subnet Swarm & Yuma Consensus */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         
         {/* Header Panel */}
         <div className="glass-panel" style={{ padding: 22, border: '1px solid var(--border-cyan)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <div className="resq-bittensor-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{
                 width: 44,
@@ -77,7 +77,7 @@ export default function BittensorSubnet({ soundEnabled }) {
           </div>
 
           {/* Subnet Statistics Cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+          <div className="resq-bittensor-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
             <div style={{ background: 'rgba(0,0,0,0.35)', padding: 12, borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
               <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>ACTIVE MINERS</div>
               <div style={{ fontSize: 18, fontWeight: 700, color: '#ffffff', marginTop: 4 }}>128 Nodes</div>
@@ -136,8 +136,8 @@ export default function BittensorSubnet({ soundEnabled }) {
                     transition: 'all 0.2s'
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div className="resq-miner-row-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div className="resq-miner-meta" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <span className="code-pill" style={{ background: '#000', color: 'var(--accent-cyan)' }}>
                         UID #{m.uid}
                       </span>

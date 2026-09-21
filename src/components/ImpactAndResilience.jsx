@@ -86,7 +86,7 @@ export default function ImpactAndResilience({ soundEnabled }) {
         </div>
 
         {/* Stepper Timeline */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 10, marginBottom: 16 }}>
+        <div className="resq-impact-cycle-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 10, marginBottom: 16 }}>
           {cycleSteps.map((item, idx) => {
             const isActive = activeCycleStep === idx;
             return (
@@ -121,7 +121,7 @@ export default function ImpactAndResilience({ soundEnabled }) {
         </div>
 
         {/* Active Step Detail Card */}
-        <div style={{ background: 'rgba(0,0,0,0.4)', borderRadius: 10, padding: 16, border: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="resq-impact-step-detail" style={{ background: 'rgba(0,0,0,0.4)', borderRadius: 10, padding: 16, border: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--accent-cyan)' }}>
               {cycleSteps[activeCycleStep].step} — {cycleSteps[activeCycleStep].actor}
@@ -144,7 +144,7 @@ export default function ImpactAndResilience({ soundEnabled }) {
       </div>
 
       {/* Middle Grid: Estimated Impact vs Feasibility & Viability */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <div className="resq-impact-middle-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         
         {/* Estimated Impact Simulated Metrics (From Slide 5) */}
         <div className="glass-panel" style={{ padding: 22 }}>
@@ -192,7 +192,7 @@ export default function ImpactAndResilience({ soundEnabled }) {
           </div>
 
           {/* Technical Feasibility Radar & Architecture */}
-          <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: 14, alignItems: 'center', background: 'rgba(0,0,0,0.3)', padding: 12, borderRadius: 8, border: '1px solid var(--border-subtle)', marginBottom: 14 }}>
+          <div className="resq-impact-radar-grid" style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: 14, alignItems: 'center', background: 'rgba(0,0,0,0.3)', padding: 12, borderRadius: 8, border: '1px solid var(--border-subtle)', marginBottom: 14 }}>
             {/* SVG Radar Polygon */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <svg width="120" height="120" viewBox="0 0 120 120">
@@ -232,17 +232,17 @@ export default function ImpactAndResilience({ soundEnabled }) {
             <div style={{ fontSize: 10, fontWeight: 700, color: '#ff4d79', letterSpacing: 0.5, marginBottom: 6 }}>
               OFFLINE RESILIENCE PIPELINE (SLIDE 4)
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, textAlign: 'center' }}>
+            <div className="resq-resilience-flow" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, textAlign: 'center' }}>
               <div style={{ background: 'rgba(0,0,0,0.5)', padding: '6px 8px', borderRadius: 6, flex: 1, border: '1px solid rgba(255, 42, 95, 0.4)' }}>
                 <div style={{ fontSize: 9, color: '#ff4d79', fontWeight: 800 }}>1. NETWORK FAIL</div>
                 <div style={{ fontSize: 8, color: 'var(--text-muted)', marginTop: 2 }}>Towers collapse</div>
               </div>
-              <div style={{ color: 'var(--accent-cyan)', fontWeight: 800, fontSize: 14 }}>➔</div>
+              <div className="resq-flow-arrow" style={{ color: 'var(--accent-cyan)', fontWeight: 800, fontSize: 14 }}>➤</div>
               <div style={{ background: 'rgba(0,0,0,0.5)', padding: '6px 8px', borderRadius: 6, flex: 1, border: '1px solid rgba(0, 242, 254, 0.4)' }}>
                 <div style={{ fontSize: 9, color: 'var(--accent-cyan)', fontWeight: 800 }}>2. MESH P2P</div>
                 <div style={{ fontSize: 8, color: 'var(--text-muted)', marginTop: 2 }}>BLE / Wi-Fi Direct</div>
               </div>
-              <div style={{ color: 'var(--accent-emerald)', fontWeight: 800, fontSize: 14 }}>➔</div>
+              <div className="resq-flow-arrow" style={{ color: 'var(--accent-emerald)', fontWeight: 800, fontSize: 14 }}>➤</div>
               <div style={{ background: 'rgba(0,0,0,0.5)', padding: '6px 8px', borderRadius: 6, flex: 1, border: '1px solid rgba(0, 245, 155, 0.4)' }}>
                 <div style={{ fontSize: 9, color: 'var(--accent-emerald)', fontWeight: 800 }}>3. CONTINUOUS ROUTING</div>
                 <div style={{ fontSize: 8, color: 'var(--text-muted)', marginTop: 2 }}>On-device safe path</div>
@@ -261,7 +261,7 @@ export default function ImpactAndResilience({ soundEnabled }) {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, textAlign: 'center' }}>
+            <div className="resq-impact-econ-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, textAlign: 'center' }}>
               {economicData.map((d, i) => (
                 <div key={i} style={{ background: 'rgba(255,255,255,0.03)', padding: 10, borderRadius: 6, border: '1px solid var(--border-subtle)' }}>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700 }}>{d.year}</div>
@@ -294,7 +294,7 @@ export default function ImpactAndResilience({ soundEnabled }) {
       </div>
 
       {/* Bottom Triple Cards: Social, Economic, Environmental Benefits (From Slide 5) */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+      <div className="resq-impact-benefits-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
         
         <div style={{ background: 'rgba(255, 42, 95, 0.08)', border: '1px solid rgba(255, 42, 95, 0.3)', borderRadius: 12, padding: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#ff4d79', fontWeight: 700, fontSize: 15, marginBottom: 8 }}>

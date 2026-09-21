@@ -1,0 +1,635 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESQ — Responsive Design System
+   Breakpoints: 1200px (compact), 768px (tablet), 480px (mobile)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Global Touch Targets ────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  button, a, select, input, textarea {
+    min-height: 44px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   NAVBAR
+   ═══════════════════════════════════════════════════════════════════════════ */
+.resq-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+@media (max-width: 1200px) {
+  .resq-navbar {
+    padding: 10px 16px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .resq-navbar {
+    padding: 8px 12px !important;
+  }
+
+  .resq-navbar-inner {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .resq-brand-tagline {
+    display: none !important;
+  }
+
+  .resq-mode-switcher {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .resq-mode-switcher button {
+    flex: 1;
+    justify-content: center;
+    font-size: 10px !important;
+    padding: 6px 8px !important;
+  }
+
+  .resq-nav-tools {
+    gap: 6px !important;
+  }
+
+  .resq-nav-tools .resq-pitchdeck-label {
+    display: none;
+  }
+
+  .resq-sos-btn {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+  }
+
+  /* Mobile hamburger toggle */
+  .resq-mobile-nav-collapsed .resq-mode-switcher,
+  .resq-mobile-nav-collapsed .resq-nav-tools .resq-pitchdeck-btn {
+    display: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .resq-brand-text {
+    font-size: 16px !important;
+  }
+
+  .resq-brand-badge {
+    display: none !important;
+  }
+
+  .resq-mode-switcher button span:not(.resq-mode-icon) {
+    display: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   APP TAB BAR
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 1200px) {
+  .resq-toolbar {
+    padding: 12px 16px 0 16px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .resq-toolbar {
+    padding: 8px 12px 0 12px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .resq-tab-bar {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap !important;
+    min-width: 0;
+  }
+
+  .resq-tab-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .resq-tab-label {
+    display: none !important;
+  }
+
+  .resq-tab {
+    min-width: 40px !important;
+    padding: 8px 10px !important;
+    flex-shrink: 0;
+  }
+
+  .resq-status-pills {
+    display: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .resq-tab {
+    padding: 8px !important;
+    min-width: 36px !important;
+  }
+}
+
+/* ── Blackout Banner ─────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .resq-blackout-banner {
+    padding: 6px 12px !important;
+    font-size: 10px !important;
+    flex-wrap: wrap !important;
+    text-align: center;
+  }
+
+  .resq-blackout-banner .resq-blackout-text {
+    font-size: 10px !important;
+    line-height: 1.3;
+  }
+
+  .resq-blackout-banner .tactical-badge {
+    display: none !important;
+  }
+}
+
+/* ── Main Content Area ───────────────────────────────────────────────────── */
+@media (max-width: 1200px) {
+  .resq-main {
+    padding: 12px 16px 16px 16px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .resq-main {
+    padding: 8px 12px 12px 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .resq-main {
+    padding: 6px 8px 8px 8px !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   EVACUATION MAP
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 1200px) {
+  .resq-map-layout {
+    grid-template-columns: 1fr 320px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .resq-map-layout {
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+    min-height: unset !important;
+  }
+
+  .resq-map-container {
+    height: 55vh !important;
+    min-height: 350px !important;
+  }
+
+  .resq-map-sidebar {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .resq-map-hud {
+    flex-direction: column !important;
+    gap: 6px !important;
+    left: 8px !important;
+    right: 8px !important;
+    top: 8px !important;
+  }
+
+  .resq-map-hud-left {
+    flex-wrap: wrap !important;
+  }
+
+  .resq-route-legend {
+    display: none !important;
+  }
+
+  .resq-map-hud-right {
+    flex-wrap: wrap !important;
+  }
+
+  .resq-flood-bar {
+    width: calc(100% - 16px) !important;
+    left: 8px !important;
+    bottom: 8px !important;
+    padding: 10px 12px !important;
+  }
+
+  .resq-flood-labels {
+    display: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .resq-map-container {
+    height: 45vh !important;
+    min-height: 280px !important;
+  }
+
+  .resq-gps-btn-text {
+    display: none !important;
+  }
+
+  .resq-flood-bar {
+    padding: 8px 10px !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MESH SIMULATOR
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 1200px) {
+  .resq-mesh-layout {
+    grid-template-columns: 1fr 320px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .resq-mesh-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .resq-mesh-header {
+    flex-direction: column !important;
+    gap: 10px !important;
+    align-items: flex-start !important;
+  }
+
+  .resq-mesh-topology {
+    height: 280px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .resq-mesh-topology {
+    height: 220px !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RELIEF VAULT
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 1200px) {
+  .resq-vault-layout {
+    grid-template-columns: 1fr 360px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .resq-vault-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .resq-vault-stats {
+    grid-template-columns: 1fr !important;
+  }
+
+  .resq-bounty-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+
+  .resq-bounty-actions {
+    align-self: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  .resq-vault-stats {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONDER DASHBOARD
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 1200px) {
+  .resq-responder-layout {
+    grid-template-columns: 1fr 360px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .resq-responder-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .resq-sos-item-header {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .resq-sos-item-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .resq-sos-item-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BITTENSOR SUBNET
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 1200px) {
+  .resq-bittensor-layout {
+    grid-template-columns: 1fr 320px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .resq-bittensor-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .resq-bittensor-stats {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .resq-bittensor-header {
+    flex-direction: column !important;
+    gap: 10px !important;
+    align-items: flex-start !important;
+  }
+
+  .resq-miner-row-header {
+    flex-direction: column !important;
+    gap: 8px !important;
+    align-items: flex-start !important;
+  }
+
+  .resq-miner-meta {
+    flex-wrap: wrap !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .resq-bittensor-stats {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IMPACT & RESILIENCE
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 1200px) {
+  .resq-impact-cycle-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .resq-impact-cycle-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .resq-impact-middle-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .resq-impact-benefits-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .resq-impact-step-detail {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .resq-impact-econ-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  .resq-impact-radar-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .resq-resilience-flow {
+    flex-direction: column !important;
+    gap: 4px !important;
+  }
+
+  .resq-resilience-flow .resq-flow-arrow {
+    transform: rotate(90deg);
+  }
+}
+
+@media (max-width: 480px) {
+  .resq-impact-cycle-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .resq-impact-econ-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESEARCH REFERENCES
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .resq-research-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .resq-datasources-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .resq-datasources-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IPFS SECTION (inline in App.jsx)
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .resq-ipfs-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .resq-ipfs-header {
+    flex-direction: column !important;
+    gap: 8px !important;
+    align-items: flex-start !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SOS MODAL
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .resq-sos-modal {
+    width: calc(100vw - 32px) !important;
+    max-width: 100% !important;
+    padding: 16px !important;
+  }
+
+  .resq-sos-header-title {
+    font-size: 14px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .resq-sos-modal {
+    width: calc(100vw - 16px) !important;
+    padding: 12px !important;
+  }
+
+  .resq-sos-triage-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .resq-sos-telemetry-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SLIDE DECK MODAL
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .resq-deck-modal {
+    width: calc(100vw - 24px) !important;
+    max-width: 100% !important;
+    padding: 16px !important;
+  }
+
+  .resq-deck-topbar {
+    flex-direction: column !important;
+    gap: 8px !important;
+    align-items: flex-start !important;
+  }
+
+  .resq-deck-nav {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .resq-deck-dots {
+    order: -1;
+    width: 100%;
+    justify-content: center !important;
+  }
+
+  .resq-deck-nav button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Slide 1 grids */
+  .resq-deck-slide1-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Slide 2 grids */
+  .resq-deck-slide2-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .resq-deck-innovations-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .resq-deck-arch-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  /* Slide 3 grids */
+  .resq-deck-slide3-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .resq-deck-techstack {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Slide 4 grids */
+  .resq-deck-slide4-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .resq-deck-offline-flow {
+    flex-direction: column !important;
+  }
+
+  /* Slide 5 grids */
+  .resq-deck-cycle-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .resq-deck-impact-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Slide 6 grids */
+  .resq-deck-papers-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .resq-deck-ds-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .resq-deck-modal {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    padding: 12px !important;
+  }
+
+  .resq-deck-slide1-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .resq-deck-innovations-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .resq-deck-cycle-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .resq-deck-ds-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HAZARD MODAL (inline in EvacuationMap)
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .resq-hazard-modal {
+    width: calc(100vw - 32px) !important;
+    max-width: 100% !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .resq-hazard-modal {
+    width: calc(100vw - 16px) !important;
+    padding: 16px !important;
+  }
+}
