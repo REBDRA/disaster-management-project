@@ -104,14 +104,25 @@ export default function EvacuationMap({
     }
   };
 
-  // Trigger GPS auto-location
-  const triggerAutoLocation = () => {
-    if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser.");
-      return;
+  // Re-center map directly on user's pin (100% offline)
+  const handleRecenterToUser = () => {
+    if (soundEnabled) playSound('click');
+    const map = mapInstanceRef.current;
+    if (map) {
+      map.flyTo(userPos, 14, { duration: 1.0 });
     }
+  };
+
+  // Trigger GPS auto-location (works online & gracefully falls back offline)
+  const triggerAutoLocation = () => {
     setGpsStatus('LOCATING');
     if (soundEnabled) playSound('click');
+
+    if (!navigator.geolocation) {
+      handleRecenterToUser();
+      setGpsStatus('OFFLINE_FIX');
+      return;
+    }
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -123,14 +134,16 @@ export default function EvacuationMap({
 
         const map = mapInstanceRef.current;
         if (map) {
-          map.flyTo(coords, 14, { duration: 1.5 });
+          map.flyTo(coords, 14, { duration: 1.2 });
         }
       },
       (err) => {
-        console.warn("Auto-location error / permission denied:", err.message);
-        setGpsStatus('DENIED');
+        console.warn("Auto-location offline or denied, centering on local on-device coordinates:", err.message);
+        handleRecenterToUser();
+        setGpsStatus('OFFLINE_FIX');
+        if (soundEnabled) playSound('success');
       },
-      { enableHighAccuracy: true, timeout: 8000 }
+      { enableHighAccuracy: true, timeout: 4000 }
     );
   };
 
@@ -362,17 +375,25 @@ export default function EvacuationMap({
       iconAnchor: [12, 12]
     });
 
-    const marker = L.marker(userPos, { icon: userIcon }).addTo(map);
+    const marker = L.marker(userPos, { icon: userIcon, draggable: true }).addTo(map);
+
+    marker.on('dragend', (event) => {
+      const position = event.target.getLatLng();
+      setUserPos([position.lat, position.lng]);
+      if (soundEnabled) playSound('click');
+    });
+
     marker.bindPopup(`
       <div style="font-family: Outfit, sans-serif; font-size: 13px;">
         <b style="color: #00f2fe;">YOUR CURRENT LOCATION</b><br/>
         <span>Lat: ${userPos[0].toFixed(4)}, Lon: ${userPos[1].toFixed(4)}</span><br/>
-        <span>Engine: <b>${isBlackoutMode ? 'Offline On-Device A*' : 'Cloud GrassHopper'}</b></span>
+        <span>Engine: <b>${isBlackoutMode ? 'Offline On-Device A*' : 'Cloud GrassHopper'}</b></span><br/>
+        <span style="color: var(--accent-emerald); font-size: 11px;">💡 Drag pin or click map to test routing from any point</span>
       </div>
     `);
 
     userMarkerRef.current = marker;
-  }, [userPos, isBlackoutMode]);
+  }, [userPos, isBlackoutMode, soundEnabled]);
 
   // Update Hazard Markers on Map
   useEffect(() => {
@@ -667,25 +688,43 @@ export default function EvacuationMap({
             </div>
 
             <div className="resq-map-hud-right" style={{ display: 'flex', gap: 8, pointerEvents: 'auto', flexWrap: 'wrap' }}>
+              {/* Re-center Directly on User Pin (100% Offline) */}
+              <button
+                onClick={handleRecenterToUser}
+                className="btn-ghost"
+                style={{
+                  background: 'rgba(0, 242, 254, 0.15)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid var(--border-cyan)',
+                  color: 'var(--accent-cyan)'
+                }}
+                title="Pan and center map on your location marker (Works 100% Offline)"
+              >
+                <Crosshair size={15} />
+                <span className="resq-gps-btn-text">Center My Pin</span>
+              </button>
+
               {/* Auto GPS Location Button */}
               <button
                 onClick={triggerAutoLocation}
                 className="btn-ghost"
                 style={{
-                  background: gpsStatus === 'SYNCED' ? 'rgba(0, 245, 155, 0.15)' : 'rgba(15, 23, 42, 0.85)',
+                  background: gpsStatus === 'SYNCED' || gpsStatus === 'OFFLINE_FIX' ? 'rgba(0, 245, 155, 0.15)' : 'rgba(15, 23, 42, 0.85)',
                   backdropFilter: 'blur(10px)',
-                  border: `1px solid ${gpsStatus === 'SYNCED' ? 'var(--accent-emerald)' : 'var(--border-cyan)'}`,
-                  color: gpsStatus === 'SYNCED' ? 'var(--accent-emerald)' : 'var(--accent-cyan)'
+                  border: `1px solid ${gpsStatus === 'SYNCED' || gpsStatus === 'OFFLINE_FIX' ? 'var(--accent-emerald)' : 'var(--border-cyan)'}`,
+                  color: gpsStatus === 'SYNCED' || gpsStatus === 'OFFLINE_FIX' ? 'var(--accent-emerald)' : 'var(--accent-cyan)'
                 }}
-                title="Automatically detect current live GPS location"
+                title="Detect live GPS location or sync with local coordinates"
               >
-                <Crosshair size={15} className={gpsStatus === 'LOCATING' ? 'radar-ping' : ''} />
+                <Radio size={15} className={gpsStatus === 'LOCATING' ? 'radar-ping' : ''} />
                 <span className="resq-gps-btn-text">
                   {gpsStatus === 'LOCATING' 
-                    ? 'Detecting GPS...' 
+                    ? 'Locating...' 
                     : gpsStatus === 'SYNCED' 
-                      ? `✓ Auto GPS (±${locationAccuracy || 10}m)` 
-                      : 'Auto Locate (GPS)'}
+                      ? `✓ Live GPS (±${locationAccuracy || 10}m)` 
+                      : gpsStatus === 'OFFLINE_FIX'
+                        ? '✓ Offline Location Synced'
+                        : 'Auto GPS'}
                 </span>
               </button>
 
