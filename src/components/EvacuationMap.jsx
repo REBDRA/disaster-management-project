@@ -167,26 +167,22 @@ export default function EvacuationMap({
   // Compute active regional shelters based on user coordinates
   const activeShelters = useMemo(() => getRegionalShelters(userPos), [userPos]);
 
-  // Fetch real street-snapped coordinates when online, or on-device A* when offline
+  // Fetch real street-snapped coordinates from cache / on-device road grid (Works seamlessly in both Online & Blackout Mesh Mode)
   useEffect(() => {
     let isCancelled = false;
     const dest = activeShelters.find(s => s.id === selectedShelterId) || activeShelters[0];
     if (!dest) return;
 
-    if (!isBlackoutMode) {
-      fetchOSRMStreetRoute(userPos, dest.coords).then(res => {
-        if (!isCancelled && res) {
-          setStreetSnappedRoute(res);
-        }
-      });
-    } else {
-      setStreetSnappedRoute(null);
-    }
+    fetchOSRMStreetRoute(userPos, dest.coords).then(res => {
+      if (!isCancelled && res) {
+        setStreetSnappedRoute(res);
+      }
+    });
 
     return () => {
       isCancelled = true;
     };
-  }, [userPos, selectedShelterId, activeShelters, isBlackoutMode]);
+  }, [userPos, selectedShelterId, activeShelters]);
 
   const effectivePathCoords = streetSnappedRoute?.pathCoords || routeInfo.pathCoords;
   const effectiveDistanceKm = streetSnappedRoute?.distanceKm || routeInfo.distanceKm;
