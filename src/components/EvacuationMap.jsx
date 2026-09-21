@@ -113,6 +113,15 @@ export default function EvacuationMap({
     }
   };
 
+  // Fit view to entire evacuation corridor
+  const handleFitRoute = () => {
+    if (soundEnabled) playSound('click');
+    const map = mapInstanceRef.current;
+    if (!map || !effectivePathCoords || effectivePathCoords.length === 0) return;
+    const bounds = L.latLngBounds(effectivePathCoords);
+    map.fitBounds(bounds, { padding: [60, 60], maxZoom: 15 });
+  };
+
   // Trigger GPS auto-location (works online & gracefully falls back offline)
   const triggerAutoLocation = () => {
     setGpsStatus('LOCATING');
@@ -191,6 +200,8 @@ export default function EvacuationMap({
     const map = L.map(mapContainerRef.current, {
       center: activePack.center,
       zoom: activePack.zoom,
+      minZoom: 11,
+      maxZoom: 18,
       zoomControl: false,
       attributionControl: false
     });
@@ -645,141 +656,185 @@ export default function EvacuationMap({
           {/* Leaflet Container */}
           <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />
 
-          {/* Tactical HUD Header Bar over Map */}
-          <div className="resq-map-hud" style={{
+          {/* Unified Tactical HUD Container (Zero Overlap Flow) */}
+          <div className="resq-map-hud-container" style={{
             position: 'absolute',
-            top: 16,
-            left: 16,
-            right: 16,
+            top: 14,
+            left: 14,
+            right: 14,
             zIndex: 400,
             display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            pointerEvents: 'none',
-            gap: 10,
-            flexWrap: 'wrap'
+            flexDirection: 'column',
+            gap: 8,
+            pointerEvents: 'none'
           }}>
-            <div className="resq-map-hud-left" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-              <div className="glass-panel" style={{ padding: '8px 16px', pointerEvents: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
-                <Compass size={18} color="var(--accent-cyan)" />
-                <div>
-                  <div style={{ fontSize: 10, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Target Elevation Zone</div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#ffffff' }}>
-                    {selectedShelter.name} ({selectedShelter.elevation}m High Ground)
+            {/* Top Tier: Target Sanctuary & Action Buttons */}
+            <div className="resq-map-hud-row1" style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: 8,
+              flexWrap: 'wrap'
+            }}>
+              {/* Target Sanctuary Info */}
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', pointerEvents: 'auto' }}>
+                <div className="glass-panel" style={{ padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <Compass size={16} color="var(--accent-cyan)" />
+                  <div>
+                    <div style={{ fontSize: 9, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Target Elevation Zone</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#ffffff' }}>
+                      {selectedShelter.name} ({selectedShelter.elevation}m High Ground)
+                    </div>
                   </div>
+                </div>
+
+                <div className="resq-route-legend glass-panel" style={{
+                  padding: '6px 12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  border: '1px solid rgba(0, 245, 155, 0.4)',
+                  background: 'rgba(7, 10, 18, 0.9)'
+                }}>
+                  <span style={{ width: 12, height: 4, background: '#00f59b', borderRadius: 2 }}></span>
+                  <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--accent-emerald)', letterSpacing: 0.5 }}>
+                    {isBlackoutMode ? 'OFFLINE A* CORRIDOR' : 'CLOUD STREET ROUTE'} ({routeInfo.confidenceScore}%)
+                  </span>
                 </div>
               </div>
 
-              {/* Route Legend Indicator */}
-              <div className="resq-route-legend glass-panel" style={{
-                padding: '8px 14px',
-                pointerEvents: 'auto',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                border: '1px solid rgba(0, 245, 155, 0.4)',
-                background: 'rgba(7, 10, 18, 0.9)'
-              }}>
-                <span style={{ width: 16, height: 5, background: '#00f59b', borderRadius: 2 }}></span>
-                <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--accent-emerald)', letterSpacing: 0.5 }}>
-                  {isBlackoutMode ? 'OFFLINE A* SAFE CORRIDOR' : 'CLOUD STREET ROUTE'} ({routeInfo.confidenceScore}% CONFIDENCE)
-                </span>
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: 6, pointerEvents: 'auto', flexWrap: 'wrap' }}>
+                {/* Focus Evacuation Corridor button */}
+                <button
+                  onClick={handleFitRoute}
+                  className="btn-ghost"
+                  style={{
+                    background: 'rgba(0, 245, 155, 0.15)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid var(--accent-emerald)',
+                    color: 'var(--accent-emerald)',
+                    padding: '6px 10px',
+                    fontSize: 11,
+                    fontWeight: 700
+                  }}
+                  title="Fit map view to entire evacuation corridor and destination shelter"
+                >
+                  <Navigation size={13} />
+                  <span>Focus Route</span>
+                </button>
+
+                {/* Center My Pin button */}
+                <button
+                  onClick={handleRecenterToUser}
+                  className="btn-ghost"
+                  style={{
+                    background: 'rgba(0, 242, 254, 0.15)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid var(--border-cyan)',
+                    color: 'var(--accent-cyan)',
+                    padding: '6px 10px',
+                    fontSize: 11
+                  }}
+                  title="Center map on your location pin (100% Offline)"
+                >
+                  <Crosshair size={13} />
+                  <span>My Pin</span>
+                </button>
+
+                {/* Auto GPS Location Button */}
+                <button
+                  onClick={triggerAutoLocation}
+                  className="btn-ghost"
+                  style={{
+                    background: gpsStatus === 'SYNCED' || gpsStatus === 'OFFLINE_FIX' ? 'rgba(0, 245, 155, 0.15)' : 'rgba(15, 23, 42, 0.85)',
+                    backdropFilter: 'blur(10px)',
+                    border: `1px solid ${gpsStatus === 'SYNCED' || gpsStatus === 'OFFLINE_FIX' ? 'var(--accent-emerald)' : 'var(--border-cyan)'}`,
+                    color: gpsStatus === 'SYNCED' || gpsStatus === 'OFFLINE_FIX' ? 'var(--accent-emerald)' : 'var(--accent-cyan)',
+                    padding: '6px 10px',
+                    fontSize: 11
+                  }}
+                  title="Detect live GPS location or sync with local coordinates"
+                >
+                  <Radio size={13} className={gpsStatus === 'LOCATING' ? 'radar-ping' : ''} />
+                  <span>
+                    {gpsStatus === 'LOCATING' 
+                      ? 'Locating...' 
+                      : gpsStatus === 'SYNCED' 
+                        ? '✓ GPS Synced' 
+                        : gpsStatus === 'OFFLINE_FIX'
+                          ? '✓ Local Fix'
+                          : 'Auto GPS'}
+                  </span>
+                </button>
+
+                {/* Report Hazard button */}
+                <button
+                  onClick={() => setShowAddHazardModal(true)}
+                  className="btn-ghost"
+                  style={{
+                    background: 'rgba(255, 42, 95, 0.15)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 42, 95, 0.5)',
+                    color: '#ff4d79',
+                    padding: '6px 10px',
+                    fontSize: 11,
+                    fontWeight: 700
+                  }}
+                >
+                  <PlusCircle size={13} />
+                  <span>Report Hazard</span>
+                </button>
               </div>
             </div>
 
-            <div className="resq-map-hud-right" style={{ display: 'flex', gap: 8, pointerEvents: 'auto', flexWrap: 'wrap' }}>
-              {/* Re-center Directly on User Pin (100% Offline) */}
-              <button
-                onClick={handleRecenterToUser}
-                className="btn-ghost"
-                style={{
-                  background: 'rgba(0, 242, 254, 0.15)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid var(--border-cyan)',
-                  color: 'var(--accent-cyan)'
-                }}
-                title="Pan and center map on your location marker (Works 100% Offline)"
-              >
-                <Crosshair size={15} />
-                <span className="resq-gps-btn-text">Center My Pin</span>
-              </button>
+            {/* Second Tier: Non-Overlapping Layer Toggles & Engine Status */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: 8,
+              flexWrap: 'wrap',
+              pointerEvents: 'auto'
+            }}>
+              <div className="glass-panel" style={{
+                padding: '4px 10px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                fontSize: 11
+              }}>
+                <span style={{ color: 'var(--text-muted)', fontWeight: 700, fontSize: 10 }}>LAYERS:</span>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', color: layerVisibility.floodZones ? 'var(--accent-cyan)' : 'var(--text-muted)' }}>
+                  <input
+                    type="checkbox"
+                    checked={layerVisibility.floodZones}
+                    onChange={e => setLayerVisibility({ ...layerVisibility, floodZones: e.target.checked })}
+                  />
+                  Flood Inundation
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', color: layerVisibility.shelters ? 'var(--accent-emerald)' : 'var(--text-muted)' }}>
+                  <input
+                    type="checkbox"
+                    checked={layerVisibility.shelters}
+                    onChange={e => setLayerVisibility({ ...layerVisibility, shelters: e.target.checked })}
+                  />
+                  High-Ground Shelters
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', color: layerVisibility.safeRoute ? '#00f59b' : 'var(--text-muted)' }}>
+                  <input
+                    type="checkbox"
+                    checked={layerVisibility.safeRoute}
+                    onChange={e => setLayerVisibility({ ...layerVisibility, safeRoute: e.target.checked })}
+                  />
+                  Safe A* Route
+                </label>
+              </div>
 
-              {/* Auto GPS Location Button */}
-              <button
-                onClick={triggerAutoLocation}
-                className="btn-ghost"
-                style={{
-                  background: gpsStatus === 'SYNCED' || gpsStatus === 'OFFLINE_FIX' ? 'rgba(0, 245, 155, 0.15)' : 'rgba(15, 23, 42, 0.85)',
-                  backdropFilter: 'blur(10px)',
-                  border: `1px solid ${gpsStatus === 'SYNCED' || gpsStatus === 'OFFLINE_FIX' ? 'var(--accent-emerald)' : 'var(--border-cyan)'}`,
-                  color: gpsStatus === 'SYNCED' || gpsStatus === 'OFFLINE_FIX' ? 'var(--accent-emerald)' : 'var(--accent-cyan)'
-                }}
-                title="Detect live GPS location or sync with local coordinates"
-              >
-                <Radio size={15} className={gpsStatus === 'LOCATING' ? 'radar-ping' : ''} />
-                <span className="resq-gps-btn-text">
-                  {gpsStatus === 'LOCATING' 
-                    ? 'Locating...' 
-                    : gpsStatus === 'SYNCED' 
-                      ? `✓ Live GPS (±${locationAccuracy || 10}m)` 
-                      : gpsStatus === 'OFFLINE_FIX'
-                        ? '✓ Offline Location Synced'
-                        : 'Auto GPS'}
-                </span>
-              </button>
-
-              <button
-                onClick={() => setShowAddHazardModal(true)}
-                className="btn-ghost"
-                style={{ background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255, 42, 95, 0.4)', color: '#ff4d79' }}
-              >
-                <PlusCircle size={15} />
-                <span>Report Road Hazard</span>
-              </button>
+              <div className="code-pill" style={{ color: isBlackoutMode ? 'var(--accent-emerald)' : 'var(--accent-cyan)', fontSize: 10 }}>
+                {isBlackoutMode ? '🛡️ Offline A* Active (0ms Latency)' : '☁️ Cloud Street Routing Active'}
+              </div>
             </div>
-          </div>
-
-          {/* Tactical Layer Toggles floating pill */}
-          <div style={{
-            position: 'absolute',
-            top: 75,
-            left: 16,
-            zIndex: 400,
-            background: 'rgba(7, 10, 18, 0.85)',
-            backdropFilter: 'blur(12px)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 8,
-            padding: '6px 10px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            fontSize: 11
-          }}>
-            <span style={{ color: 'var(--text-muted)', fontWeight: 700 }}>LAYERS:</span>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', color: layerVisibility.floodZones ? 'var(--accent-cyan)' : 'var(--text-muted)' }}>
-              <input
-                type="checkbox"
-                checked={layerVisibility.floodZones}
-                onChange={e => setLayerVisibility({ ...layerVisibility, floodZones: e.target.checked })}
-              />
-              Flood Zones
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', color: layerVisibility.shelters ? 'var(--accent-emerald)' : 'var(--text-muted)' }}>
-              <input
-                type="checkbox"
-                checked={layerVisibility.shelters}
-                onChange={e => setLayerVisibility({ ...layerVisibility, shelters: e.target.checked })}
-              />
-              Shelters
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', color: layerVisibility.safeRoute ? '#00f59b' : 'var(--text-muted)' }}>
-              <input
-                type="checkbox"
-                checked={layerVisibility.safeRoute}
-                onChange={e => setLayerVisibility({ ...layerVisibility, safeRoute: e.target.checked })}
-              />
-              Safe A* Route
-            </label>
           </div>
 
           {/* Dynamic Water Level / Flood Simulator Floating Bar */}
