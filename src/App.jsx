@@ -22,6 +22,7 @@ import ImpactAndResilience from './components/ImpactAndResilience';
 import ResearchReferences from './components/ResearchReferences';
 import SosModal from './components/SosModal';
 import SlideDeckModal from './components/SlideDeckModal';
+import IpfsElevationPacks from './components/IpfsElevationPacks';
 import { INITIAL_HAZARDS } from './utils/geoRouting';
 import { IPFS_MAP_PACKS, generateBurnerIdentity } from './utils/web3Mock';
 import { playSound } from './utils/audioEffects';
@@ -211,65 +212,12 @@ export default function App() {
         )}
 
         {activeTab === 'IPFS' && (
-          <div className="glass-panel" style={{ padding: 24 }}>
-            <div className="resq-ipfs-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-              <div>
-                <div style={{ fontSize: 18, fontWeight: 700, color: '#ffffff', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Database size={20} color="var(--accent-cyan)" />
-                  <span>DECENTRALIZED IPFS MAP & ELEVATION REGISTRY</span>
-                </div>
-                <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
-                  Pre-cached digital elevation models (DEM) and vector map packs pinned on Filecoin & IPFS for offline zero-cellular routing.
-                </div>
-              </div>
-
-              <span className="tactical-badge badge-emerald">
-                100% CONTENT-ADDRESSED CIDs
-              </span>
-            </div>
-
-            <div className="resq-ipfs-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-              {IPFS_MAP_PACKS.map((pack, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    background: 'rgba(0,0,0,0.3)',
-                    border: '1px solid var(--border-subtle)',
-                    borderRadius: 10,
-                    padding: 16
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: '#ffffff' }}>{pack.region}</div>
-                    <CheckCircle size={16} color="var(--accent-emerald)" />
-                  </div>
-
-                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '8px 0' }}>
-                    Model: <span style={{ color: 'var(--accent-cyan)' }}>{pack.elevationModel}</span>
-                  </div>
-
-                  <div style={{ background: '#070a12', padding: 8, borderRadius: 6, border: '1px solid var(--border-subtle)', marginBottom: 12 }}>
-                    <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>IPFS ROOT CID:</div>
-                    <div style={{ fontSize: 10, color: '#94a3b8', fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}>
-                      {pack.cid}
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span className="code-pill">{pack.size}</span>
-                    <button
-                      onClick={() => soundEnabled && playSound('click')}
-                      className="btn-ghost"
-                      style={{ padding: '6px 10px', fontSize: 11 }}
-                    >
-                      <DownloadCloud size={13} />
-                      Verify Cache
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <IpfsElevationPacks
+            soundEnabled={soundEnabled}
+            onSelectRegionAndGoToMap={(regionKey) => {
+              setActiveTab('MAP');
+            }}
+          />
         )}
       </main>
 

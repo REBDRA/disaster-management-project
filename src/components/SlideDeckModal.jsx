@@ -168,7 +168,7 @@ export default function SlideDeckModal({ isOpen, onClose, soundEnabled }) {
     {
       id: 3,
       tag: 'SLIDE 3',
-      title: 'TECHNICAL APPROACH & SYSTEM FLOW',
+      title: 'TECHNICAL APPROACH',
       subtitle: 'Complete Technology Stack & 4-Step End-to-End Implementation Flow',
       content: (
         <div className="resq-deck-slide3-grid" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 16 }}>
@@ -180,44 +180,44 @@ export default function SlideDeckModal({ isOpen, onClose, soundEnabled }) {
             </div>
 
             <div className="resq-deck-techstack" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 11 }}>
-              <div style={{ background: 'rgba(0,0,0,0.4)', padding: 8, borderRadius: 6, border: '1px solid var(--border-subtle)' }}>
-                <div style={{ color: 'var(--accent-cyan)', fontWeight: 700 }}>MOBILE & MAPS</div>
-                <div style={{ color: 'var(--text-secondary)', marginTop: 2 }}>• Flutter / React<br/>• MapLibre GL<br/>• OpenStreetMap</div>
+              <div style={{ background: 'rgba(0, 242, 254, 0.05)', padding: 10, borderRadius: 8, border: '1px solid var(--border-cyan)' }}>
+                <div style={{ color: 'var(--accent-cyan)', fontWeight: 800, fontSize: 11, marginBottom: 4 }}>MOBILE & MAPS</div>
+                <div style={{ color: 'var(--text-secondary)', lineHeight: 1.4 }}>• Flutter<br/>• MapLibre<br/>• OpenStreetMap</div>
               </div>
 
-              <div style={{ background: 'rgba(0,0,0,0.4)', padding: 8, borderRadius: 6, border: '1px solid var(--border-subtle)' }}>
-                <div style={{ color: 'var(--accent-cyan)', fontWeight: 700 }}>DATABASE & STORAGE</div>
-                <div style={{ color: 'var(--text-secondary)', marginTop: 2 }}>• SQLite (on-device)<br/>• GeoPackage (offline)<br/>• Supabase Storage</div>
+              <div style={{ background: 'rgba(0, 242, 254, 0.05)', padding: 10, borderRadius: 8, border: '1px solid var(--border-cyan)' }}>
+                <div style={{ color: 'var(--accent-cyan)', fontWeight: 800, fontSize: 11, marginBottom: 4 }}>BACKEND & REAL TIME</div>
+                <div style={{ color: 'var(--text-secondary)', lineHeight: 1.4 }}>• FastAPI (Python)<br/>• WebSocket<br/>• Redis</div>
               </div>
 
-              <div style={{ background: 'rgba(0,0,0,0.4)', padding: 8, borderRadius: 6, border: '1px solid var(--border-subtle)' }}>
-                <div style={{ color: 'var(--accent-cyan)', fontWeight: 700 }}>CONNECTIVITY & ALERTS</div>
-                <div style={{ color: 'var(--text-secondary)', marginTop: 2 }}>• Google Nearby / BLE<br/>• Firebase FCM<br/>• Supabase Auth</div>
+              <div style={{ background: 'rgba(0, 242, 254, 0.05)', padding: 10, borderRadius: 8, border: '1px solid var(--border-cyan)' }}>
+                <div style={{ color: 'var(--accent-cyan)', fontWeight: 800, fontSize: 11, marginBottom: 4 }}>DATABASE & STORAGE</div>
+                <div style={{ color: 'var(--text-secondary)', lineHeight: 1.4 }}>• SQLite<br/>• GeoPackage<br/>• Supabase Storage</div>
               </div>
 
-              <div style={{ background: 'rgba(0,0,0,0.4)', padding: 8, borderRadius: 6, border: '1px solid var(--border-subtle)' }}>
-                <div style={{ color: 'var(--accent-cyan)', fontWeight: 700 }}>GEOSPATIAL PROCESSING</div>
-                <div style={{ color: 'var(--text-secondary)', marginTop: 2 }}>• GeoPandas<br/>• Rasterio + GDAL<br/>• SRTM DEM 30m</div>
+              <div style={{ background: 'rgba(0, 242, 254, 0.05)', padding: 10, borderRadius: 8, border: '1px solid var(--border-cyan)' }}>
+                <div style={{ color: 'var(--accent-cyan)', fontWeight: 800, fontSize: 11, marginBottom: 4 }}>ROUTING ENGINES</div>
+                <div style={{ color: 'var(--text-secondary)', lineHeight: 1.4 }}>• A* — on-device (offline)<br/>• GrassHopper — server side (online)</div>
               </div>
 
-              <div style={{ background: 'rgba(0,0,0,0.4)', padding: 8, borderRadius: 6, border: '1px solid var(--border-subtle)' }}>
-                <div style={{ color: 'var(--accent-cyan)', fontWeight: 700 }}>ROUTING ENGINES</div>
-                <div style={{ color: 'var(--text-secondary)', marginTop: 2 }}>• A* (on-device offline)<br/>• GraphHopper (online)</div>
+              <div style={{ background: 'rgba(0, 242, 254, 0.05)', padding: 10, borderRadius: 8, border: '1px solid var(--border-cyan)' }}>
+                <div style={{ color: 'var(--accent-cyan)', fontWeight: 800, fontSize: 11, marginBottom: 4 }}>GEOSPATIAL PROCESSING</div>
+                <div style={{ color: 'var(--text-secondary)', lineHeight: 1.4 }}>• GeoPandas<br/>• Rasterio + GDAL<br/>• SRTM DEM 30m</div>
               </div>
 
-              <div style={{ background: 'rgba(0,0,0,0.4)', padding: 8, borderRadius: 6, border: '1px solid var(--border-subtle)' }}>
-                <div style={{ color: 'var(--accent-cyan)', fontWeight: 700 }}>BACKEND & REAL TIME</div>
-                <div style={{ color: 'var(--text-secondary)', marginTop: 2 }}>• FastAPI (Python)<br/>• WebSocket Telemetry<br/>• Redis Message Bus</div>
+              <div style={{ background: 'rgba(0, 242, 254, 0.05)', padding: 10, borderRadius: 8, border: '1px solid var(--border-cyan)' }}>
+                <div style={{ color: 'var(--accent-cyan)', fontWeight: 800, fontSize: 11, marginBottom: 4 }}>RISK & WEATHER INTEL</div>
+                <div style={{ color: 'var(--text-secondary)', lineHeight: 1.4 }}>• WeatherAPI<br/>• Rule Based Risk Engine</div>
               </div>
 
-              <div style={{ background: 'rgba(0,0,0,0.4)', padding: 8, borderRadius: 6, border: '1px solid var(--border-subtle)' }}>
-                <div style={{ color: 'var(--accent-cyan)', fontWeight: 700 }}>RISK & WEATHER INTEL</div>
-                <div style={{ color: 'var(--text-secondary)', marginTop: 2 }}>• WeatherAPI<br/>• Rule Based Risk Engine</div>
+              <div style={{ background: 'rgba(0, 242, 254, 0.05)', padding: 10, borderRadius: 8, border: '1px solid var(--border-cyan)' }}>
+                <div style={{ color: 'var(--accent-cyan)', fontWeight: 800, fontSize: 11, marginBottom: 4 }}>CONNECTIVITY & ALERTS</div>
+                <div style={{ color: 'var(--text-secondary)', lineHeight: 1.4 }}>• Google Nearby Connections (P2P), BLE<br/>• Firebase FCM<br/>• Supabase Auth</div>
               </div>
 
-              <div style={{ background: 'rgba(0,0,0,0.4)', padding: 8, borderRadius: 6, border: '1px solid var(--border-subtle)' }}>
-                <div style={{ color: 'var(--accent-cyan)', fontWeight: 700 }}>DASHBOARD & HOSTING</div>
-                <div style={{ color: 'var(--text-secondary)', marginTop: 2 }}>• React Authority HUD<br/>• Render Cloud Edge</div>
+              <div style={{ background: 'rgba(0, 242, 254, 0.05)', padding: 10, borderRadius: 8, border: '1px solid var(--border-cyan)' }}>
+                <div style={{ color: 'var(--accent-cyan)', fontWeight: 800, fontSize: 11, marginBottom: 4 }}>DASHBOARD & HOSTING</div>
+                <div style={{ color: 'var(--text-secondary)', lineHeight: 1.4 }}>• React (Authority dashboard)<br/>• Render</div>
               </div>
             </div>
           </div>
@@ -231,17 +231,59 @@ export default function SlideDeckModal({ isOpen, onClose, soundEnabled }) {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {[
-                { step: '1. Capture & Request', tool: 'Flutter / React', desc: 'App captures GPS fix + citizen reports; requests route via FastAPI (online) or on-device A* (offline).' },
-                { step: '2. Compute Safest Path', tool: 'PostGIS / A* / GraphHopper', desc: 'Risk Engine scores roads using DEM elevation and live hazards to return the safest dry route.' },
-                { step: '3. Sync & Alert', tool: 'WebSocket + P2P Mesh', desc: 'WebSocket pushes live updates when online; Nearby Connections relays them peer-to-peer when offline.' },
-                { step: '4. Monitor & Respond', tool: 'React Authority HUD', desc: 'Authority dashboard tracks SOS queues, shelter capacities, and flood hazards live to coordinate rescue.' }
+                { 
+                  num: '1',
+                  step: '1. Capture & Request', 
+                  tools: ['Flutter'], 
+                  desc: 'Flutter app captures GPS + citizen reports; requests a route via FastAPI (online) or on-device A* (offline).' 
+                },
+                { 
+                  num: '2',
+                  step: '2. Compute Safest Path', 
+                  tools: ['PostGIS', 'A* / GrassHopper'], 
+                  desc: 'Risk Engine scores roads using PostGIS, SRTM DEM and live hazards; A* / GrassHopper returns the safest route.' 
+                },
+                { 
+                  num: '3',
+                  step: '3. Sync & Alert', 
+                  tools: ['WebSocket', 'Nearby Connections'], 
+                  desc: 'WebSocket + FCM push route and hazard updates; Nearby Connections relays them peer-to-peer when offline.' 
+                },
+                { 
+                  num: '4',
+                  step: '4. Monitor & Respond', 
+                  tools: ['React'], 
+                  desc: 'React authority dashboard tracks SOS queues, shelter capacity and hazards live to coordinate response.' 
+                }
               ].map((flow, i) => (
-                <div key={i} style={{ background: 'rgba(0,0,0,0.4)', padding: 10, borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: '#ffffff' }}>{flow.step}</div>
-                    <span className="tactical-badge badge-cyan" style={{ fontSize: 9, padding: '1px 6px' }}>{flow.tool}</span>
+                <div key={i} style={{ background: 'rgba(0,0,0,0.4)', padding: 10, borderRadius: 8, border: '1px solid var(--border-subtle)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  <div style={{
+                    width: 26,
+                    height: 26,
+                    borderRadius: '50%',
+                    background: 'rgba(0, 245, 155, 0.15)',
+                    border: '1px solid var(--accent-emerald)',
+                    color: 'var(--accent-emerald)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 11,
+                    fontWeight: 800,
+                    flexShrink: 0
+                  }}>
+                    {flow.num}
                   </div>
-                  <div style={{ fontSize: 10, color: 'var(--text-secondary)', lineHeight: 1.3 }}>{flow.desc}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2, flexWrap: 'wrap', gap: 4 }}>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: '#ffffff' }}>{flow.step}</div>
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        {flow.tools.map((t, ti) => (
+                          <span key={ti} className="tactical-badge badge-emerald" style={{ fontSize: 9, padding: '1px 6px' }}>{t}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 10, color: 'var(--text-secondary)', lineHeight: 1.35 }}>{flow.desc}</div>
+                  </div>
                 </div>
               ))}
             </div>
