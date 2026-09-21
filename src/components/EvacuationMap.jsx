@@ -463,18 +463,43 @@ export default function EvacuationMap({
       map.removeLayer(routeLayerRef.current);
     }
 
-    if (!layerVisibility.safeRoute) return;
+    if (!layerVisibility.safeRoute || !effectivePathCoords || effectivePathCoords.length < 2) return;
 
-    const polyline = L.polyline(effectivePathCoords, {
+    const routeGroup = L.layerGroup();
+
+    // 1. Outer Glow Aura Line
+    const glowLine = L.polyline(effectivePathCoords, {
+      color: isBlackoutMode ? '#00f59b' : '#00f2fe',
+      weight: 12,
+      opacity: 0.35,
+      lineCap: 'round',
+      lineJoin: 'round'
+    });
+    routeGroup.addLayer(glowLine);
+
+    // 2. Primary Tactical Safe Corridor Line
+    const mainLine = L.polyline(effectivePathCoords, {
       color: isBlackoutMode ? '#00f59b' : '#00f2fe',
       weight: 6,
-      opacity: 0.9,
+      opacity: 0.95,
       lineCap: 'round',
       lineJoin: 'round',
-      dashArray: isBlackoutMode ? '8, 6' : null
-    }).addTo(map);
+      dashArray: isBlackoutMode ? '10, 7' : null
+    });
+    routeGroup.addLayer(mainLine);
 
-    routeLayerRef.current = polyline;
+    // 3. Inner White Precision Tracer Line
+    const innerTracer = L.polyline(effectivePathCoords, {
+      color: '#ffffff',
+      weight: 2,
+      opacity: 0.75,
+      lineCap: 'round',
+      lineJoin: 'round'
+    });
+    routeGroup.addLayer(innerTracer);
+
+    routeGroup.addTo(map);
+    routeLayerRef.current = routeGroup;
   }, [effectivePathCoords, isBlackoutMode, layerVisibility.safeRoute]);
 
   // Handle reporting a new road hazard with P2P Gossip Broadcast simulation
