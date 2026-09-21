@@ -162,6 +162,7 @@ export default function App() {
         {activeTab === 'MAP' && (
           <EvacuationMap
             isBlackoutMode={isBlackoutMode}
+            setIsBlackoutMode={setIsBlackoutMode}
             waterLevel={waterLevel}
             setWaterLevel={setWaterLevel}
             selectedShelterId={selectedShelterId}
