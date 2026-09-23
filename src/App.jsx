@@ -121,7 +121,7 @@ export default function App() {
         <div className="resq-tab-bar">
           {[
             { id: 'MAP', label: 'Evacuation Map', icon: <Map size={13} /> },
-            { id: 'DISASTER_AI', label: 'Grok AI Disaster Warning', icon: <Cpu size={13} /> },
+            { id: 'DISASTER_AI', label: 'AI Disaster Warning', icon: <Cpu size={13} /> },
             { id: 'RESPONDER', label: 'NDRF Triage', icon: <ShieldAlert size={13} /> },
             { id: 'TREASURY', label: 'Relief Treasury', icon: <Building2 size={13} /> },
             { id: 'OFFLINE_PACKS', label: 'Offline Packs', icon: <HardDrive size={13} /> },

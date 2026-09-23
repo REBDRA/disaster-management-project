@@ -25,19 +25,17 @@ import {
 import { 
   DISASTER_TYPES, 
   DISASTER_PRESETS, 
-  generateGrokDisasterDiagnosis 
-} from '../utils/grokAiEngine';
-import { RIVER_BASINS, TIMELINE_FORECAST_STEPS } from '../utils/floodForecastEngine';
+  fetchLiveAiDisasterDiagnosis 
+} from '../utils/aiDisasterEngine';
 import { playSound } from '../utils/audioEffects';
 
-export default function AiDisasterIntelligence({ soundEnabled, onSelectTimelineHour, selectedTimelineHour = 0 }) {
+export default function AiDisasterIntelligence({ soundEnabled }) {
   const [selectedDisasterTypeId, setSelectedDisasterTypeId] = useState('MULTI_HAZARD');
   const [selectedPresetId, setSelectedPresetId] = useState('preset-wayanad');
   const [customLocation, setCustomLocation] = useState('');
   const [customNotes, setCustomNotes] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentDiagnosis, setCurrentDiagnosis] = useState(null);
-  const [timelineIndex, setTimelineIndex] = useState(0);
   const [activeTab, setActiveTab] = useState('PRESETS'); // 'PRESETS' | 'CUSTOM'
 
   // Selected preset object
@@ -58,29 +56,33 @@ export default function AiDisasterIntelligence({ soundEnabled, onSelectTimelineH
       setCurrentDiagnosis(preset);
       setIsAnalyzing(false);
       if (soundEnabled) playSound('success');
-    }, 400);
+    }, 300);
   };
 
-  const handleRunCustomDiagnosis = (e) => {
+  const handleRunCustomDiagnosis = async (e) => {
     if (e) e.preventDefault();
     if (!customLocation.trim()) return;
 
     if (soundEnabled) playSound('click');
     setIsAnalyzing(true);
 
-    setTimeout(() => {
-      const result = generateGrokDisasterDiagnosis(
+    try {
+      const result = await fetchLiveAiDisasterDiagnosis(
         customLocation.trim(),
         selectedDisasterTypeId === 'MULTI_HAZARD' ? 'FLOOD_INUNDATION' : selectedDisasterTypeId,
         customNotes
       );
       setCurrentDiagnosis(result);
-      setIsAnalyzing(false);
       if (soundEnabled) playSound('success');
-    }, 600);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const activeHazard = currentDiagnosis || activePreset;
+  const analysis = activeHazard.aiAnalysis || activeHazard.grokAnalysis || {};
 
   const getThreatBadge = (threat) => {
     switch (threat) {
@@ -104,17 +106,17 @@ export default function AiDisasterIntelligence({ soundEnabled, onSelectTimelineH
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
             <span className="tactical-badge badge-cyan" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
               <Cpu size={12} />
-              GROK AI NEURAL CORE
+              AI NEURAL CORE
             </span>
             <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 700 }}>
-              v3.4 Multi-Hazard Engine
+              v3.4 Multi-Hazard Intelligence
             </span>
           </div>
           <h1 style={{ fontSize: 24, fontWeight: 900, color: 'var(--text-primary)', margin: 0 }}>
-            AI Disaster Intelligence Center
+            AI Disaster Warning Center
           </h1>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>
-            Predictive modeling for Earthquakes, Landslides, Flash Floods, and Cyclones powered by Grok AI.
+            Predictive neural early warnings for Earthquakes, Landslides, Flash Floods, and Cyclones.
           </p>
         </div>
 
@@ -136,7 +138,7 @@ export default function AiDisasterIntelligence({ soundEnabled, onSelectTimelineH
               cursor: 'pointer'
             }}
           >
-            Live Catastrophe Scenarios
+            Live Hazard Scenarios
           </button>
           <button
             onClick={() => {
@@ -154,7 +156,7 @@ export default function AiDisasterIntelligence({ soundEnabled, onSelectTimelineH
               cursor: 'pointer'
             }}
           >
-            Custom Grok Diagnosis
+            Custom AI Diagnosis
           </button>
         </div>
       </div>
@@ -198,7 +200,7 @@ export default function AiDisasterIntelligence({ soundEnabled, onSelectTimelineH
         })}
       </div>
 
-      {/* Preset Scenario Cards Carousel / Grid */}
+      {/* Preset Scenario Cards Grid */}
       {activeTab === 'PRESETS' ? (
         <div style={{
           display: 'grid',
@@ -209,6 +211,7 @@ export default function AiDisasterIntelligence({ soundEnabled, onSelectTimelineH
             .filter(p => selectedDisasterTypeId === 'MULTI_HAZARD' || p.disasterType === selectedDisasterTypeId)
             .map(preset => {
               const isSelected = activeHazard.id === preset.id;
+              const pAnalysis = preset.aiAnalysis || preset.grokAnalysis || {};
               return (
                 <div
                   key={preset.id}
@@ -233,7 +236,7 @@ export default function AiDisasterIntelligence({ soundEnabled, onSelectTimelineH
                     {preset.title}
                   </div>
                   <div style={{ fontSize: 11, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span>Confidence: <b>{preset.grokAnalysis.confidenceScore}</b></span>
+                    <span>Confidence: <b>{pAnalysis.confidenceScore || '96.4%'}</b></span>
                     <span>•</span>
                     <span style={{ color: 'var(--accent-blue)', fontWeight: 700 }}>Inspect AI →</span>
                   </div>
@@ -242,10 +245,10 @@ export default function AiDisasterIntelligence({ soundEnabled, onSelectTimelineH
             })}
         </div>
       ) : (
-        /* Custom Grok Disaster Diagnosis Query Box */
+        /* Custom AI Disaster Diagnosis Query Box */
         <div className="glass-panel" style={{ padding: 18 }}>
           <h2 style={{ fontSize: 15, fontWeight: 800, margin: '0 0 10px 0', color: 'var(--text-primary)' }}>
-            Run Grok AI Disaster Assessment for Any City / District
+            Run AI Disaster Threat Assessment for Any City / District
           </h2>
           <form onSubmit={handleRunCustomDiagnosis} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 }}>
@@ -255,7 +258,7 @@ export default function AiDisasterIntelligence({ soundEnabled, onSelectTimelineH
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g., Joshimath, Dehradun, Mumbai Coastal..."
+                  placeholder="e.g., Wayanad, Joshimath, Guwahati, Mumbai, Shimla..."
                   value={customLocation}
                   onChange={(e) => setCustomLocation(e.target.value)}
                   style={{
@@ -297,6 +300,28 @@ export default function AiDisasterIntelligence({ soundEnabled, onSelectTimelineH
               </div>
             </div>
 
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>
+                Optional Sensor & Ground Observations
+              </label>
+              <input
+                type="text"
+                placeholder="e.g., Heavy 24h cloudburst, river water rising 15cm/hr, slope cracks visible..."
+                value={customNotes}
+                onChange={(e) => setCustomNotes(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '9px 12px',
+                  borderRadius: 10,
+                  border: '1px solid var(--border-medium)',
+                  background: 'var(--bg-tertiary)',
+                  color: 'var(--text-primary)',
+                  fontSize: 13,
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+
             <button
               type="submit"
               disabled={isAnalyzing || !customLocation.trim()}
@@ -304,13 +329,13 @@ export default function AiDisasterIntelligence({ soundEnabled, onSelectTimelineH
               style={{ width: '100%', justifyContent: 'center', marginTop: 4 }}
             >
               <Sparkles size={16} />
-              <span>{isAnalyzing ? 'Grok AI Neural Network Analyzing...' : 'Synthesize Grok Disaster Warning'}</span>
+              <span>{isAnalyzing ? 'AI Neural Model Synthesizing Telemetry...' : 'Synthesize AI Disaster Warning'}</span>
             </button>
           </form>
         </div>
       )}
 
-      {/* Grok AI Live Diagnostic Intelligence Panel */}
+      {/* AI Live Diagnostic Intelligence Panel */}
       <div className="glass-panel" style={{ padding: 20, border: '1.5px solid var(--accent-blue)' }}>
         
         {/* Panel Header */}
@@ -319,7 +344,7 @@ export default function AiDisasterIntelligence({ soundEnabled, onSelectTimelineH
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
               <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--accent-blue)', display: 'flex', alignItems: 'center', gap: 4 }}>
                 <Zap size={14} />
-                GROK NEURAL PREDICTION VERDICT
+                AI NEURAL PREDICTION VERDICT
               </span>
               <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>•</span>
               <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
@@ -335,7 +360,7 @@ export default function AiDisasterIntelligence({ soundEnabled, onSelectTimelineH
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)' }}>CONFIDENCE SCORE</div>
               <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--accent-emerald)' }}>
-                {activeHazard.grokAnalysis?.confidenceScore || '96.2%'}
+                {analysis.confidenceScore || '96.4%'}
               </div>
             </div>
             {getThreatBadge(activeHazard.threatLevel)}
@@ -366,7 +391,7 @@ export default function AiDisasterIntelligence({ soundEnabled, onSelectTimelineH
           ))}
         </div>
 
-        {/* Grok AI Diagnostic Summary */}
+        {/* AI Diagnostic Summary */}
         <div style={{
           background: 'rgba(37, 99, 235, 0.06)',
           borderLeft: '4px solid var(--accent-blue)',
@@ -379,7 +404,7 @@ export default function AiDisasterIntelligence({ soundEnabled, onSelectTimelineH
             PHYSICAL MECHANISM & FORECAST SYNTHESIS
           </div>
           <p style={{ fontSize: 13, color: 'var(--text-primary)', margin: 0, lineHeight: 1.5, fontWeight: 500 }}>
-            {activeHazard.grokAnalysis?.summary}
+            {analysis.summary}
           </p>
         </div>
 
@@ -397,7 +422,7 @@ export default function AiDisasterIntelligence({ soundEnabled, onSelectTimelineH
               PREDICTED IMPACT TIMELINE
             </div>
             <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.4 }}>
-              {activeHazard.grokAnalysis?.predictedTimeline}
+              {analysis.predictedTimeline}
             </div>
           </div>
 
@@ -408,19 +433,19 @@ export default function AiDisasterIntelligence({ soundEnabled, onSelectTimelineH
               CIVIL DEFENSE & EVACUATION MANDATE
             </div>
             <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.4 }}>
-              {activeHazard.grokAnalysis?.evacuationPriority}
+              {analysis.evacuationPriority}
             </div>
           </div>
         </div>
 
         {/* Key Risk Factors List */}
-        {activeHazard.grokAnalysis?.keyRisks && (
+        {analysis.keyRisks && analysis.keyRisks.length > 0 && (
           <div>
             <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-secondary)', marginBottom: 8, textTransform: 'uppercase' }}>
               Identified Compound Risk Vectors:
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {activeHazard.grokAnalysis.keyRisks.map((risk, idx) => (
+              {analysis.keyRisks.map((risk, idx) => (
                 <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-primary)' }}>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent-red)' }} />
                   <span>{risk}</span>

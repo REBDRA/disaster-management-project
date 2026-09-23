@@ -1,7 +1,7 @@
-# RESQ — Adaptive Multi-Hazard Evacuation & Grok AI Disaster Intelligence Platform
+# RESQ — Adaptive Multi-Hazard Evacuation & AI Disaster Intelligence Platform
 
 > **Civic Evacuation Intelligence & Multi-Hazard Early Warning for Earthquakes, Landslides, Flash Floods, and Cyclones.**  
-> 100% Web2 offline-first architecture with Grok AI predictive modeling, on-device SRTM 30m Digital Elevation Models (DEM), 48-Hour Inundation Timeline forecasting, CWC river gauge telemetry, and ad-hoc radio store-and-forward mesh.
+> 100% Web2 offline-first architecture with AI predictive modeling, on-device SRTM 30m Digital Elevation Models (DEM), 48-Hour Inundation Timeline forecasting, CWC river gauge telemetry, and ad-hoc radio store-and-forward mesh.
 
 ---
 
@@ -11,10 +11,10 @@
    - **Light Theme (Default / Primary):** High-contrast, clean civic command interface engineered for daytime clarity, outdoor usability, and rapid emergency triage.
    - **Dark Theme:** Switchable tactical night mode with one-tap toggle and instant `localStorage` persistence.
 
-2. **Grok AI Multi-Hazard Disaster Intelligence Center**
+2. **AI Multi-Hazard Disaster Intelligence Center**
    - **Multi-Hazard Neural Predictions:** Real-time predictive warnings for Earthquakes & Tectonic Faults, Landslides & Debris Mudflows, Flash Floods & Dam Breaches, and Tropical Cyclones.
    - **Live Catastrophe Presets:** Pre-configured telemetry for Wayanad Cloudburst/Landslide, Brahmaputra Guwahati Breach, Chamoli Glacial Outburst, Odisha Super Cyclone, and Delhi-NCR Fault Rupture.
-   - **Custom Grok Disaster Diagnosis:** Query any district or municipality for instant multi-sensor AI synthesis, risk vector identification, and civil defense directives.
+   - **Custom AI Disaster Diagnosis:** Query any district or municipality for instant multi-sensor AI synthesis, risk vector identification, and civil defense directives.
    - **48-Hour Inundation Timeline:** Interactive timeline simulation (+0h to +48h) tracking river surge levels, road submergence, and breach windows.
 
 3. **100% Offline Resilience (Zero-Cloud PWA)**
@@ -64,7 +64,7 @@ Open `http://127.0.0.1:5173` in your browser.
 │   ├── components/
 │   │   ├── Navbar.jsx            # Light/Dark toggle, network status, SOS trigger
 │   │   ├── EvacuationMap.jsx     # Flood timeline forecast, map layers & route engine
-│   │   ├── AiDisasterIntelligence.jsx # Grok AI Multi-Hazard prediction & diagnostics
+│   │   ├── AiDisasterIntelligence.jsx # AI Multi-Hazard prediction & diagnostics
 │   │   ├── ReliefFundTreasury.jsx # Web2 emergency relief & DBT disbursement
 │   │   ├── OfflineDistrictPacks.jsx # IndexedDB DEM & vector map pack manager
 │   │   ├── MeshSimulator.jsx     # LoRa 868MHz / BLE store-and-forward mesh
@@ -73,7 +73,7 @@ Open `http://127.0.0.1:5173` in your browser.
 │   │   ├── ImpactAndResilience.jsx # 5-step resilience cycle & impact stats
 │   │   └── ResearchReferences.jsx# CWC, NASA SRTM, NDRF academic citations
 │   └── utils/
-│       ├── grokAiEngine.js       # Grok AI multi-disaster prediction algorithms
+│       ├── aiDisasterEngine.js   # AI multi-disaster prediction algorithms
 │       ├── floodForecastEngine.js# 48-hour timeline hydrological model
 │       ├── offlineManager.js     # IndexedDB / LocalStorage offline sync engine
 │       ├── geoRouting.js         # On-device elevation A* routing & hazards
