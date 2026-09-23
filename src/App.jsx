@@ -1,65 +1,83 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Map, 
   Radio, 
-  Vault, 
+  Building2, 
   ShieldAlert, 
-  Database, 
+  HardDrive, 
   CloudOff, 
-  DownloadCloud,
-  CheckCircle,
-  Brain,
-  Activity,
-  BookOpen
+  Activity, 
+  BookOpen,
+  Waves,
+  Database,
+  Wifi,
+  Sparkles
 } from 'lucide-react';
 import Navbar from './components/Navbar';
 import EvacuationMap from './components/EvacuationMap';
+import FloodForecastDashboard from './components/FloodForecastDashboard';
 import MeshSimulator from './components/MeshSimulator';
-import ReliefVault from './components/ReliefVault';
+import ReliefFundTreasury from './components/ReliefFundTreasury';
 import ResponderDashboard from './components/ResponderDashboard';
-import BittensorSubnet from './components/BittensorSubnet';
+import OfflineDistrictPacks from './components/OfflineDistrictPacks';
 import ImpactAndResilience from './components/ImpactAndResilience';
 import ResearchReferences from './components/ResearchReferences';
 import SosModal from './components/SosModal';
 import SlideDeckModal from './components/SlideDeckModal';
-import IpfsElevationPacks from './components/IpfsElevationPacks';
 import { INITIAL_HAZARDS } from './utils/geoRouting';
-import { IPFS_MAP_PACKS, generateBurnerIdentity } from './utils/web3Mock';
+import { registerServiceWorker } from './utils/offlineManager';
 import { playSound } from './utils/audioEffects';
 
 export default function App() {
+  // Theme state: defaults to 'light' (as requested)
+  const [theme, setTheme] = useState(() => {
+    try {
+      return localStorage.getItem('resq_theme_mode') || 'light';
+    } catch {
+      return 'light';
+    }
+  });
+
   const [activeTab, setActiveTab] = useState('MAP');
   const [isBlackoutMode, setIsBlackoutMode] = useState(false);
-  const [waterLevel, setWaterLevel] = useState(2.5);
+  const [isNetworkOnline, setIsNetworkOnline] = useState(true);
+  const [waterLevel, setWaterLevel] = useState(2.2);
   const [selectedShelterId, setSelectedShelterId] = useState('shelter-1');
   const [hazards, setHazards] = useState(INITIAL_HAZARDS);
-  
-  // Web3 state
-  const [walletConnected, setWalletConnected] = useState(true);
-  const [walletAddress, setWalletAddress] = useState('0x71CB49c1221D40632D2833F424c53d1000bB48D');
   const [soundEnabled, setSoundEnabled] = useState(true);
   
   // Modals
   const [isSosOpen, setIsSosOpen] = useState(false);
   const [isDeckOpen, setIsDeckOpen] = useState(false);
 
-  const handleConnectWallet = async () => {
-    if (window.ethereum) {
-      try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        if (accounts && accounts[0]) {
-          setWalletAddress(accounts[0]);
-          setWalletConnected(true);
-          return;
-        }
-      } catch (err) {
-        console.warn('Injected wallet rejected or unavailable, falling back to ResQ DID', err);
-      }
+  // Sync theme attribute to <html> and localStorage
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    try {
+      localStorage.setItem('resq_theme_mode', theme);
+    } catch (err) {
+      console.warn(err);
     }
-    // Burner DID fallback
-    setWalletAddress(generateBurnerIdentity());
-    setWalletConnected(true);
-  };
+  }, [theme]);
+
+  // Online / Offline network listeners & Service Worker registration
+  useEffect(() => {
+    registerServiceWorker();
+
+    const handleOnline = () => setIsNetworkOnline(true);
+    const handleOffline = () => setIsNetworkOnline(false);
+
+    if (typeof window !== 'undefined') {
+      setIsNetworkOnline(navigator.onLine);
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+    }
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const handleTabChange = (tabId) => {
     if (soundEnabled) playSound('click');
@@ -69,10 +87,13 @@ export default function App() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       
-      {/* Top Cyber Navigation Bar */}
+      {/* Top Civic Intelligence Navigation Bar */}
       <Navbar
         isBlackoutMode={isBlackoutMode}
         setIsBlackoutMode={setIsBlackoutMode}
+        theme={theme}
+        setTheme={setTheme}
+        isNetworkOnline={isNetworkOnline}
         activePeersCount={6}
         onOpenSos={() => setIsSosOpen(true)}
         onOpenDeck={() => setIsDeckOpen(true)}
@@ -80,10 +101,10 @@ export default function App() {
         setSoundEnabled={setSoundEnabled}
       />
 
-      {/* Blackout Mode Tactical Notice Banner */}
+      {/* Blackout Mode Notice Banner */}
       {isBlackoutMode && (
         <div className="resq-blackout-banner" style={{
-          background: 'linear-gradient(90deg, #ff2a5f 0%, #ff5e36 100%)',
+          background: 'linear-gradient(90deg, var(--accent-red) 0%, #ea580c 100%)',
           color: '#ffffff',
           padding: '8px 24px',
           fontSize: 12,
@@ -92,10 +113,12 @@ export default function App() {
           alignItems: 'center',
           justifyContent: 'center',
           gap: 12,
-          boxShadow: '0 4px 20px rgba(255, 42, 95, 0.4)'
+          boxShadow: '0 4px 20px rgba(225, 29, 72, 0.4)'
         }}>
           <CloudOff size={16} />
-          <span className="resq-blackout-text">CELLULAR & POWER GRID BLACKOUT ACTIVE — Dual-Engine switched to On-Device Elevation Routing & P2P Mesh Gossip Relay</span>
+          <span className="resq-blackout-text">
+            TELECOM & POWER BLACKOUT ACTIVE — Dual-Engine running 100% on-device SRTM Elevation Routing & Local Radio Mesh
+          </span>
           <span className="tactical-badge" style={{ background: 'rgba(0,0,0,0.3)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.4)' }}>
             ZERO CLOUD DEPENDENCY
           </span>
@@ -115,16 +138,25 @@ export default function App() {
         gap: 12
       }}>
         {/* Navigation Tabs */}
-        <div className="resq-tab-bar" style={{ display: 'flex', gap: 8, background: 'rgba(0,0,0,0.4)', padding: 4, borderRadius: 10, border: '1px solid var(--border-subtle)' }}>
+        <div className="resq-tab-bar" style={{
+          display: 'flex',
+          gap: 6,
+          background: 'var(--tab-bar-bg)',
+          padding: 4,
+          borderRadius: 12,
+          border: '1px solid var(--border-subtle)',
+          overflowX: 'auto',
+          maxWidth: '100%'
+        }}>
           {[
-            { id: 'MAP', label: 'Adaptive Evacuation Map', icon: <Map size={15} /> },
-            { id: 'MESH', label: 'DePIN P2P Mesh Relay', icon: <Radio size={15} /> },
+            { id: 'MAP', label: 'Evacuation Map & Timeline', icon: <Map size={15} /> },
+            { id: 'FLOOD_AI', label: 'AI Flood Warning & Inundation', icon: <Waves size={15} /> },
             { id: 'RESPONDER', label: 'NDRF / SDRF Triage Center', icon: <ShieldAlert size={15} /> },
-            { id: 'IMPACT', label: 'Resilience Cycle & Impact', icon: <Activity size={15} /> },
-            { id: 'RESEARCH', label: 'Research & References', icon: <BookOpen size={15} /> },
-            { id: 'BITTENSOR', label: 'Bittensor AI Subnet 42', icon: <Brain size={15} /> },
-            { id: 'VAULT', label: 'On-Chain Relief Vault', icon: <Vault size={15} /> },
-            { id: 'IPFS', label: 'IPFS Elevation Packs', icon: <Database size={15} /> }
+            { id: 'TREASURY', label: 'Emergency Relief Treasury', icon: <Building2 size={15} /> },
+            { id: 'OFFLINE_PACKS', label: 'Offline District Packs', icon: <HardDrive size={15} /> },
+            { id: 'MESH', label: 'Local Radio Mesh Relay', icon: <Radio size={15} /> },
+            { id: 'IMPACT', label: 'Resilience Cycle', icon: <Activity size={15} /> },
+            { id: 'RESEARCH', label: 'Research & Citations', icon: <BookOpen size={15} /> }
           ].map(tab => (
             <button
               key={tab.id}
@@ -134,7 +166,7 @@ export default function App() {
               style={{
                 fontSize: 12,
                 fontWeight: activeTab === tab.id ? 700 : 500,
-                borderBottom: activeTab === tab.id ? '2px solid var(--accent-cyan)' : '2px solid transparent',
+                borderBottom: activeTab === tab.id ? '2px solid var(--accent-blue)' : '2px solid transparent',
                 whiteSpace: 'nowrap'
               }}
             >
@@ -144,16 +176,16 @@ export default function App() {
           ))}
         </div>
 
-        {/* Status Pills */}
-        <div className="resq-status-pills" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        {/* Status Telemetry Pills */}
+        <div className="resq-status-pills" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div className="code-pill">
             SRTM DEM: 30m HIGH-RES
           </div>
           <div className="code-pill" style={{ color: 'var(--accent-emerald)' }}>
-            L2 RPC: ARBITRUM SEPOLIA (421614)
+            LOCAL INDEXEDDB CACHE
           </div>
           <div className="code-pill">
-            GOSSIPSUB v1.2: 100% P2P
+            CWC GAUGE TELEMETRY
           </div>
         </div>
       </div>
@@ -162,6 +194,7 @@ export default function App() {
       <main className="resq-main" style={{ maxWidth: 1600, width: '100%', margin: '0 auto', padding: '16px 24px 24px 24px', flex: 1 }}>
         {activeTab === 'MAP' && (
           <EvacuationMap
+            theme={theme}
             isBlackoutMode={isBlackoutMode}
             setIsBlackoutMode={setIsBlackoutMode}
             waterLevel={waterLevel}
@@ -174,29 +207,44 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'MESH' && (
-          <MeshSimulator
-            isBlackoutMode={isBlackoutMode}
+        {activeTab === 'FLOOD_AI' && (
+          <FloodForecastDashboard
             soundEnabled={soundEnabled}
-          />
-        )}
-
-        {activeTab === 'BITTENSOR' && (
-          <BittensorSubnet
-            soundEnabled={soundEnabled}
-          />
-        )}
-
-        {activeTab === 'VAULT' && (
-          <ReliefVault
-            soundEnabled={soundEnabled}
-            walletConnected={walletConnected}
-            onConnectWallet={handleConnectWallet}
+            selectedTimelineHour={0}
+            onSelectTimelineHour={(hourOffset) => {
+              const matched = [2.2, 3.4, 4.8, 5.6, 4.9, 2.8];
+              const idx = [0, 3, 6, 12, 24, 48].indexOf(hourOffset);
+              if (idx !== -1) {
+                setWaterLevel(matched[idx]);
+              }
+            }}
           />
         )}
 
         {activeTab === 'RESPONDER' && (
           <ResponderDashboard
+            soundEnabled={soundEnabled}
+          />
+        )}
+
+        {activeTab === 'TREASURY' && (
+          <ReliefFundTreasury
+            soundEnabled={soundEnabled}
+          />
+        )}
+
+        {activeTab === 'OFFLINE_PACKS' && (
+          <OfflineDistrictPacks
+            soundEnabled={soundEnabled}
+            onSelectRegionAndGoToMap={(regionKey) => {
+              setActiveTab('MAP');
+            }}
+          />
+        )}
+
+        {activeTab === 'MESH' && (
+          <MeshSimulator
+            isBlackoutMode={isBlackoutMode}
             soundEnabled={soundEnabled}
           />
         )}
@@ -210,29 +258,19 @@ export default function App() {
         {activeTab === 'RESEARCH' && (
           <ResearchReferences />
         )}
-
-        {activeTab === 'IPFS' && (
-          <IpfsElevationPacks
-            soundEnabled={soundEnabled}
-            onSelectRegionAndGoToMap={(regionKey) => {
-              setActiveTab('MAP');
-            }}
-          />
-        )}
       </main>
 
-      {/* SOS Modal */}
+      {/* Citizen Emergency SOS Modal */}
       <SosModal
         isOpen={isSosOpen}
         onClose={() => setIsSosOpen(false)}
-        walletAddress={walletAddress}
         soundEnabled={soundEnabled}
-        onSosBroadcast={(signed) => {
-          console.log('Signed SOS broadcast to mesh:', signed);
+        onSosBroadcast={(payload) => {
+          console.log('Dispatched Web2 Citizen SOS:', payload);
         }}
       />
 
-      {/* Pitch Deck Modal */}
+      {/* Slide Deck Modal */}
       <SlideDeckModal
         isOpen={isDeckOpen}
         onClose={() => setIsDeckOpen(false)}

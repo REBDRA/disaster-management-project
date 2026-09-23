@@ -7,22 +7,24 @@ import {
   AlertTriangle, 
   Compass, 
   PlusCircle, 
-  FileCheck,
-  Brain,
-  Crosshair,
-  CloudOff,
-  Cloud,
-  Radio,
-  HardDrive,
-  Cpu,
-  Layers,
-  Send,
-  CheckCircle2,
-  ShieldAlert,
-  Zap,
-  RefreshCw,
-  Share2,
-  ArrowRight
+  Crosshair, 
+  CloudOff, 
+  Cloud, 
+  Radio, 
+  HardDrive, 
+  Layers, 
+  Send, 
+  CheckCircle2, 
+  ShieldAlert, 
+  RefreshCw, 
+  Share2, 
+  ArrowRight,
+  Clock,
+  Play,
+  Pause,
+  TrendingUp,
+  MapPin,
+  Sparkles
 } from 'lucide-react';
 import { 
   DEFAULT_REGION, 
@@ -33,9 +35,12 @@ import {
   computeSafeEvacuationRoute,
   fetchOSRMStreetRoute
 } from '../utils/geoRouting';
+import { TIMELINE_FORECAST_STEPS, RIVER_BASINS, SECTOR_FLOOD_PREDICTIONS } from '../utils/floodForecastEngine';
+import { queueOfflineHazard } from '../utils/offlineManager';
 import { playSound } from '../utils/audioEffects';
 
 export default function EvacuationMap({
+  theme = 'light',
   isBlackoutMode,
   setIsBlackoutMode,
   waterLevel,
@@ -48,43 +53,56 @@ export default function EvacuationMap({
 }) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
+  const tileLayerRef = useRef(null);
   const routeLayerRef = useRef(null);
   const floodLayersRef = useRef([]);
   const hazardMarkersRef = useRef([]);
   const shelterMarkersRef = useRef([]);
-  const meshNodeMarkersRef = useRef([]);
   const userMarkerRef = useRef(null);
 
   // Region Pack selection state
   const [selectedPackId, setSelectedPackId] = useState('assam-guwahati');
 
+  // Timeline Forecast State
+  const [timelineIndex, setTimelineIndex] = useState(0);
+  const [isSimPlaying, setIsSimPlaying] = useState(false);
+
   // Modals & Simulators
   const [showAddHazardModal, setShowAddHazardModal] = useState(false);
   const [newHazardType, setNewHazardType] = useState('ROAD_SUBMERGED');
   const [newHazardDesc, setNewHazardDesc] = useState('');
-  const [showMeshGossipModal, setShowMeshGossipModal] = useState(false);
-  const [meshGossipItem, setMeshGossipItem] = useState(null);
-  const [meshGossipHop, setMeshGossipHop] = useState(0);
-
-  // Store-and-Forward SOS State
-  const [sosDispatched, setSosDispatched] = useState(false);
-  const [sosHopProgress, setSosHopProgress] = useState(0);
 
   // Layer Visibility Toggles
   const [layerVisibility, setLayerVisibility] = useState({
     safeRoute: true,
     floodZones: true,
     shelters: true,
-    meshNodes: true,
-    demContours: true
+    riverGauges: true
   });
 
   // Auto-Location State
   const [userPos, setUserPos] = useState(DEFAULT_USER_POS);
-  const [gpsStatus, setGpsStatus] = useState('IDLE'); // 'IDLE' | 'LOCATING' | 'SYNCED' | 'DENIED'
+  const [gpsStatus, setGpsStatus] = useState('IDLE');
   const [locationAccuracy, setLocationAccuracy] = useState(null);
 
   const activePack = REGIONAL_PACKS.find(p => p.id === selectedPackId) || REGIONAL_PACKS[0];
+  const activeTimeline = TIMELINE_FORECAST_STEPS[timelineIndex];
+  const activeBasin = RIVER_BASINS.find(b => b.id.includes(selectedPackId.split('-')[0])) || RIVER_BASINS[0];
+
+  // Auto-play timeline simulation
+  useEffect(() => {
+    let interval = null;
+    if (isSimPlaying) {
+      interval = setInterval(() => {
+        setTimelineIndex(prev => {
+          const next = (prev + 1) % TIMELINE_FORECAST_STEPS.length;
+          setWaterLevel(TIMELINE_FORECAST_STEPS[next].waterRiseMeters);
+          return next;
+        });
+      }, 3500);
+    }
+    return () => clearInterval(interval);
+  }, [isSimPlaying, setWaterLevel]);
 
   // Switch regional pre-cached pack
   const handleSelectPack = (packId) => {
@@ -100,11 +118,16 @@ export default function EvacuationMap({
     setGpsStatus('IDLE');
 
     if (mapInstanceRef.current) {
-      mapInstanceRef.current.flyTo(pack.center, pack.zoom, { duration: 1.4 });
+      mapInstanceRef.current.flyTo(pack.center, pack.zoom, { duration: 1.2 });
     }
   };
 
-  // Re-center map directly on user's pin (100% offline)
+  const handleTimelineStepClick = (index) => {
+    if (soundEnabled) playSound('click');
+    setTimelineIndex(index);
+    setWaterLevel(TIMELINE_FORECAST_STEPS[index].waterRiseMeters);
+  };
+
   const handleRecenterToUser = () => {
     if (soundEnabled) playSound('click');
     const map = mapInstanceRef.current;
@@ -113,7 +136,6 @@ export default function EvacuationMap({
     }
   };
 
-  // Fit view to entire evacuation corridor
   const handleFitRoute = () => {
     if (soundEnabled) playSound('click');
     const map = mapInstanceRef.current;
@@ -122,7 +144,6 @@ export default function EvacuationMap({
     map.fitBounds(bounds, { padding: [60, 60], maxZoom: 15 });
   };
 
-  // Trigger GPS auto-location (works online & gracefully falls back offline)
   const triggerAutoLocation = () => {
     setGpsStatus('LOCATING');
     if (soundEnabled) playSound('click');
@@ -147,7 +168,7 @@ export default function EvacuationMap({
         }
       },
       (err) => {
-        console.warn("Auto-location offline or denied, centering on local on-device coordinates:", err.message);
+        console.warn("Location offline/denied, fallback to local district center:", err.message);
         handleRecenterToUser();
         setGpsStatus('OFFLINE_FIX');
         if (soundEnabled) playSound('success');
@@ -156,24 +177,20 @@ export default function EvacuationMap({
     );
   };
 
-  // Derived route info based on waterLevel, selected shelter & current userPos
+  // Route calculation
   const routeInfo = useMemo(() => {
     return computeSafeEvacuationRoute(waterLevel, selectedShelterId, userPos);
   }, [waterLevel, selectedShelterId, userPos]);
 
-  // Real turn-by-turn street-snapped coordinates
   const [streetSnappedRoute, setStreetSnappedRoute] = useState(null);
-
-  // Compute active regional shelters based on user coordinates
   const activeShelters = useMemo(() => getRegionalShelters(userPos), [userPos]);
 
-  // Fetch real street-snapped coordinates from cache / on-device road grid (Works seamlessly in both Online & Blackout Mesh Mode)
   useEffect(() => {
     let isCancelled = false;
     const dest = activeShelters.find(s => s.id === selectedShelterId) || activeShelters[0];
     if (!dest) return;
 
-    fetchOSRMStreetRoute(userPos, dest.coords).then(res => {
+    fetchOSSRMRouteSafe(userPos, dest.coords).then(res => {
       if (!isCancelled && res) {
         setStreetSnappedRoute(res);
       }
@@ -183,6 +200,14 @@ export default function EvacuationMap({
       isCancelled = true;
     };
   }, [userPos, selectedShelterId, activeShelters]);
+
+  async function fetchOSSRMRouteSafe(start, dest) {
+    try {
+      return await fetchOSRMStreetRoute(start, dest);
+    } catch {
+      return null;
+    }
+  }
 
   const effectivePathCoords = streetSnappedRoute?.pathCoords || routeInfo.pathCoords;
   const effectiveDistanceKm = streetSnappedRoute?.distanceKm || routeInfo.distanceKm;
@@ -196,48 +221,46 @@ export default function EvacuationMap({
     const map = L.map(mapContainerRef.current, {
       center: activePack.center,
       zoom: activePack.zoom,
-      minZoom: 11,
+      minZoom: 10,
       maxZoom: 18,
       zoomControl: false,
       attributionControl: false
     });
 
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    const tileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
-      className: 'tactical-dark-tile-img'
+      className: theme === 'dark' ? 'tactical-dark-tile-img' : ''
     }).addTo(map);
 
+    tileLayerRef.current = tileLayer;
     L.control.zoom({ position: 'bottomright' }).addTo(map);
-
     mapInstanceRef.current = map;
 
     const timer = setTimeout(() => {
       map.invalidateSize();
     }, 250);
 
-    let resizeObserver = null;
-    if (window.ResizeObserver && mapContainerRef.current) {
-      resizeObserver = new ResizeObserver(() => {
-        map.invalidateSize();
-      });
-      resizeObserver.observe(mapContainerRef.current);
-    }
-
-    const handleWindowResize = () => {
-      map.invalidateSize();
-    };
-    window.addEventListener('resize', handleWindowResize);
-
     return () => {
       clearTimeout(timer);
-      window.removeEventListener('resize', handleWindowResize);
-      if (resizeObserver) resizeObserver.disconnect();
       map.remove();
       mapInstanceRef.current = null;
     };
   }, []);
 
-  // Update Flood Zones based on Water Level
+  // Update map tile class on theme change
+  useEffect(() => {
+    if (!tileLayerRef.current) return;
+    const container = tileLayerRef.current.getContainer();
+    if (container) {
+      if (theme === 'dark') {
+        container.classList.add('tactical-dark-tile-img');
+      } else {
+        container.classList.remove('tactical-dark-tile-img');
+      }
+    }
+  }, [theme]);
+
+  // Update Flood Inundation Layers based on Water Level & Timeline
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -247,13 +270,14 @@ export default function EvacuationMap({
 
     if (!layerVisibility.floodZones) return;
 
+    // Render Base Flood Risk Polygons
     FLOOD_RISK_ZONES.forEach(zone => {
       const isFlooded = waterLevel >= zone.floodThreshold;
       const opacity = isFlooded ? Math.min(0.65, 0.25 + (waterLevel - zone.floodThreshold) * 0.08) : 0.12;
-      const fillColor = isFlooded ? '#00e5ff' : '#0284c7';
+      const fillColor = isFlooded ? '#e11d48' : '#0284c7';
 
       const polygon = L.polygon(zone.coords, {
-        color: isFlooded ? '#ff2a5f' : '#0284c7',
+        color: isFlooded ? '#e11d48' : '#0284c7',
         weight: isFlooded ? 2 : 1,
         dashArray: isFlooded ? '4, 4' : null,
         fillColor: fillColor,
@@ -262,10 +286,10 @@ export default function EvacuationMap({
 
       polygon.bindPopup(`
         <div style="font-family: Outfit, sans-serif; font-size: 13px; line-height: 1.4;">
-          <b style="color: ${isFlooded ? '#ff2a5f' : '#38bdf8'};">${zone.name}</b><br/>
+          <b style="color: ${isFlooded ? '#e11d48' : '#0284c7'};">${zone.name}</b><br/>
           <span>Base Elevation: ${zone.elevation}m</span><br/>
           <span>Submergence Threshold: +${zone.floodThreshold}m</span><br/>
-          <b style="color: ${isFlooded ? '#ff2a5f' : '#10b981'};">
+          <b style="color: ${isFlooded ? '#e11d48' : '#059669'};">
             ${isFlooded ? '🚨 STATUS: ACTIVELY SUBMERGED' : '✅ STATUS: DRY / PASSABLE'}
           </b>
         </div>
@@ -273,15 +297,29 @@ export default function EvacuationMap({
 
       floodLayersRef.current.push(polygon);
     });
-  }, [waterLevel, layerVisibility.floodZones]);
 
-  // Ensure selected shelter exists in the active regional shelters
-  useEffect(() => {
-    const exists = activeShelters.some(s => s.id === selectedShelterId);
-    if (!exists && activeShelters.length > 0) {
-      setSelectedShelterId(activeShelters[0].id);
+    // Render Timeline Specific Inundation Extent if available
+    if (activeTimeline && activeTimeline.inundationZones) {
+      activeTimeline.inundationZones.forEach(tZone => {
+        const poly = L.polygon(tZone.coords, {
+          color: tZone.color || '#ef4444',
+          weight: 2,
+          fillColor: tZone.color || '#ef4444',
+          fillOpacity: tZone.fillOpacity || 0.45
+        }).addTo(map);
+
+        poly.bindPopup(`
+          <div style="font-family: Outfit, sans-serif; font-size: 13px;">
+            <b style="color: ${tZone.color};">${tZone.name}</b><br/>
+            <span>Forecast Depth: <b>${tZone.depthMeters} meters</b></span><br/>
+            <span>Timeline Step: <b>${activeTimeline.timeDisplay}</b></span>
+          </div>
+        `);
+        floodLayersRef.current.push(poly);
+      });
     }
-  }, [activeShelters, selectedShelterId, setSelectedShelterId]);
+
+  }, [waterLevel, layerVisibility.floodZones, activeTimeline]);
 
   // Update Shelters Markers
   useEffect(() => {
@@ -300,8 +338,8 @@ export default function EvacuationMap({
         className: 'custom-shelter-marker',
         html: `
           <div style="
-            background: ${isSelected ? 'linear-gradient(135deg, #00f59b, #0284c7)' : 'rgba(15, 23, 42, 0.9)'};
-            border: 2px solid ${isSelected ? '#00f59b' : '#38bdf8'};
+            background: ${isSelected ? 'linear-gradient(135deg, #059669, #0284c7)' : 'rgba(15, 23, 42, 0.9)'};
+            border: 2px solid ${isSelected ? '#059669' : '#0284c7'};
             color: #ffffff;
             border-radius: 8px;
             padding: 4px 8px;
@@ -310,13 +348,13 @@ export default function EvacuationMap({
             display: flex;
             align-items: center;
             gap: 6px;
-            box-shadow: 0 4px 15px ${isSelected ? 'rgba(0, 245, 155, 0.6)' : 'rgba(0,0,0,0.4)'};
+            box-shadow: 0 4px 15px ${isSelected ? 'rgba(5, 150, 105, 0.5)' : 'rgba(0,0,0,0.3)'};
             white-space: nowrap;
             cursor: pointer;
           ">
             <span>⛰️</span>
             <span>${shelter.name}</span>
-            <span style="background: rgba(0,0,0,0.4); padding: 1px 4px; border-radius: 4px; font-size: 10px; color: #00f2fe;">
+            <span style="background: rgba(0,0,0,0.4); padding: 1px 4px; border-radius: 4px; font-size: 10px; color: #38bdf8;">
               +${shelter.elevation}m
             </span>
           </div>
@@ -334,11 +372,11 @@ export default function EvacuationMap({
 
       marker.bindPopup(`
         <div style="font-family: Outfit, sans-serif; font-size: 13px;">
-          <h4 style="margin: 0 0 6px 0; color: #00f59b; font-size: 14px;">${shelter.name}</h4>
+          <h4 style="margin: 0 0 6px 0; color: #059669; font-size: 14px;">${shelter.name}</h4>
           <p style="margin: 0 0 4px 0;"><b>Elevation:</b> ${shelter.elevation}m High-Ground Sanctuary</p>
           <p style="margin: 0 0 4px 0;"><b>Capacity:</b> ${shelter.currentOccupants} / ${shelter.capacity} people</p>
           <p style="margin: 0 0 4px 0;"><b>Facilities:</b> ${shelter.resources.join(', ')}</p>
-          <p style="margin: 0; color: #00f2fe; font-size: 11px;">CID: ${shelter.cidData}</p>
+          <p style="margin: 0; color: #0284c7; font-size: 11px;">Admin: ${shelter.adminUnit}</p>
         </div>
       `);
 
@@ -364,7 +402,7 @@ export default function EvacuationMap({
             top: 0; left: 0;
             width: 24px; height: 24px;
             border-radius: 50%;
-            background: rgba(0, 242, 254, 0.4);
+            background: rgba(37, 99, 235, 0.4);
             animation: pulse 1.8s infinite;
           "></div>
           <div style="
@@ -372,9 +410,9 @@ export default function EvacuationMap({
             top: 4px; left: 4px;
             width: 16px; height: 16px;
             border-radius: 50%;
-            background: #00f2fe;
+            background: #2563eb;
             border: 2px solid #ffffff;
-            box-shadow: 0 0 10px #00f2fe;
+            box-shadow: 0 0 10px #2563eb;
           "></div>
         </div>
       `,
@@ -392,10 +430,10 @@ export default function EvacuationMap({
 
     marker.bindPopup(`
       <div style="font-family: Outfit, sans-serif; font-size: 13px;">
-        <b style="color: #00f2fe;">YOUR CURRENT LOCATION</b><br/>
+        <b style="color: #2563eb;">YOUR CITIZEN LOCATION</b><br/>
         <span>Lat: ${userPos[0].toFixed(4)}, Lon: ${userPos[1].toFixed(4)}</span><br/>
-        <span>Engine: <b>${isBlackoutMode ? 'Offline On-Device A*' : 'Cloud GrassHopper'}</b></span><br/>
-        <span style="color: var(--accent-emerald); font-size: 11px;">💡 Drag pin or click map to test routing from any point</span>
+        <span>Elevation Routing: <b>${isBlackoutMode ? 'Offline On-Device Engine' : 'Web2 Live Routing'}</b></span><br/>
+        <span style="color: var(--accent-emerald); font-size: 11px;">💡 Drag pin anywhere to test evacuation route</span>
       </div>
     `);
 
@@ -416,7 +454,7 @@ export default function EvacuationMap({
         className: 'custom-hazard-marker',
         html: `
           <div style="
-            background: ${isBlocking ? 'rgba(255, 42, 95, 0.95)' : 'rgba(245, 158, 11, 0.95)'};
+            background: ${isBlocking ? 'rgba(225, 29, 72, 0.95)' : 'rgba(217, 119, 6, 0.95)'};
             border: 2px solid #ffffff;
             border-radius: 50%;
             width: 28px;
@@ -425,8 +463,7 @@ export default function EvacuationMap({
             align-items: center;
             justify-content: center;
             font-size: 14px;
-            box-shadow: 0 0 14px ${isBlocking ? 'rgba(255, 42, 95, 0.8)' : 'rgba(245, 158, 11, 0.8)'};
-            animation: bounce 2s infinite;
+            box-shadow: 0 0 14px ${isBlocking ? 'rgba(225, 29, 72, 0.7)' : 'rgba(217, 119, 6, 0.7)'};
           ">
             ⚠️
           </div>
@@ -438,11 +475,11 @@ export default function EvacuationMap({
       const marker = L.marker(h.coords, { icon }).addTo(map);
       marker.bindPopup(`
         <div style="font-family: Outfit, sans-serif; font-size: 13px;">
-          <b style="color: #ff2a5f;">P2P ROAD OBSTRUCTION DETECTED</b><br/>
+          <b style="color: #e11d48;">ROAD OBSTRUCTION / FLOOD HAZARD</b><br/>
           <b>${h.title}</b><br/>
           <span>Reported by: ${h.reportedBy}</span><br/>
-          <span style="color: #00f59b;">✓ Consensus Votes: ${h.consensusVotes} Nodes</span><br/>
-          <span style="color: var(--accent-cyan);">Status: On-Device A* Routing Avoidance Active</span>
+          <span style="color: #059669;">✓ Verified Field Reports: ${h.verifiedReports}</span><br/>
+          <span style="color: var(--accent-cyan);">Adaptive Elevation Route Avoidance Active</span>
         </div>
       `);
 
@@ -450,805 +487,424 @@ export default function EvacuationMap({
     });
   }, [hazards]);
 
-  // Render Evacuation Safe Path
+  // Render Evacuation Route Line
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
 
     if (routeLayerRef.current) {
       map.removeLayer(routeLayerRef.current);
+      routeLayerRef.current = null;
     }
 
     if (!layerVisibility.safeRoute || !effectivePathCoords || effectivePathCoords.length < 2) return;
 
-    const routeGroup = L.layerGroup();
-
-    // 1. Outer Glow Aura Line
-    const glowLine = L.polyline(effectivePathCoords, {
-      color: isBlackoutMode ? '#00f59b' : '#00f2fe',
-      weight: 12,
-      opacity: 0.35,
+    const polyline = L.polyline(effectivePathCoords, {
+      color: '#059669',
+      weight: 5,
+      opacity: 0.9,
       lineCap: 'round',
       lineJoin: 'round'
-    });
-    routeGroup.addLayer(glowLine);
+    }).addTo(map);
 
-    // 2. Primary Tactical Safe Corridor Line
-    const mainLine = L.polyline(effectivePathCoords, {
-      color: isBlackoutMode ? '#00f59b' : '#00f2fe',
-      weight: 6,
-      opacity: 0.95,
-      lineCap: 'round',
-      lineJoin: 'round',
-      dashArray: isBlackoutMode ? '10, 7' : null
-    });
-    routeGroup.addLayer(mainLine);
+    routeLayerRef.current = polyline;
+  }, [effectivePathCoords, layerVisibility.safeRoute]);
 
-    // 3. Inner White Precision Tracer Line
-    const innerTracer = L.polyline(effectivePathCoords, {
-      color: '#ffffff',
-      weight: 2,
-      opacity: 0.75,
-      lineCap: 'round',
-      lineJoin: 'round'
-    });
-    routeGroup.addLayer(innerTracer);
+  const handleAddHazardSubmit = (e) => {
+    e.preventDefault();
+    if (!newHazardDesc) return;
 
-    routeGroup.addTo(map);
-    routeLayerRef.current = routeGroup;
-  }, [effectivePathCoords, isBlackoutMode, layerVisibility.safeRoute]);
-
-  // Handle reporting a new road hazard with P2P Gossip Broadcast simulation
-  const handleReportHazard = () => {
-    if (!newHazardDesc.trim()) return;
-
-    if (soundEnabled) playSound('alert');
-
-    const newH = {
+    const newHaz = {
       id: `haz-${Date.now()}`,
       type: newHazardType,
       title: newHazardDesc,
-      coords: [userPos[0] + (Math.random() - 0.5) * 0.012, userPos[1] + (Math.random() - 0.5) * 0.012],
-      reportedBy: `Your Device (BLE Peer 0x${Math.floor(Math.random()*9000+1000).toString(16)})`,
-      consensusVotes: 1,
-      status: 'GOSSIP_PROPAGATING',
-      severity: 'BLOCKING'
+      coords: [userPos[0] + 0.003, userPos[1] + 0.003],
+      reportedBy: 'Citizen Volunteer #42',
+      verifiedReports: 1,
+      status: 'CONFIRMED_HAZARD',
+      severity: newHazardType === 'ROAD_SUBMERGED' ? 'BLOCKING' : 'CAUTION',
+      reportedAt: 'Just now'
     };
 
-    setHazards([newH, ...hazards]);
+    queueOfflineHazard(newHaz);
+    setHazards(prev => [newHaz, ...prev]);
     setShowAddHazardModal(false);
     setNewHazardDesc('');
-
-    // Trigger P2P Mesh Gossip Visualizer
-    setMeshGossipItem(newH);
-    setMeshGossipHop(1);
-    setShowMeshGossipModal(true);
-
-    const hopTimer1 = setTimeout(() => {
-      setMeshGossipHop(2);
-      if (soundEnabled) playSound('click');
-    }, 1200);
-
-    const hopTimer2 = setTimeout(() => {
-      setMeshGossipHop(3);
-      if (soundEnabled) playSound('success');
-    }, 2400);
-
-    return () => {
-      clearTimeout(hopTimer1);
-      clearTimeout(hopTimer2);
-    };
+    if (soundEnabled) playSound('success');
   };
-
-  // Handle Offline Store-and-Forward SOS Dispatch
-  const handleTriggerStoreAndForwardSos = () => {
-    if (soundEnabled) playSound('sos');
-    setSosDispatched(true);
-    setSosHopProgress(1);
-
-    setTimeout(() => {
-      setSosHopProgress(2);
-      if (soundEnabled) playSound('click');
-    }, 1200);
-
-    setTimeout(() => {
-      setSosHopProgress(3);
-      if (soundEnabled) playSound('success');
-    }, 2500);
-  };
-
-  const selectedShelter = activeShelters.find(s => s.id === selectedShelterId) || activeShelters[0];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       
-      {/* ═══════════════════════════════════════════════════════════════════════════
-          TOP DUAL-ENGINE ARCHITECTURE & PRE-CACHED REGIONAL PACK CONTROL BAR
-          ═══════════════════════════════════════════════════════════════════════════ */}
-      <div className="glass-panel" style={{
-        padding: '12px 18px',
-        border: `1px solid ${isBlackoutMode ? 'rgba(255, 42, 95, 0.4)' : 'var(--border-cyan)'}`,
-        background: isBlackoutMode ? 'linear-gradient(90deg, rgba(255, 42, 95, 0.08) 0%, rgba(13, 20, 36, 0.9) 100%)' : 'rgba(13, 20, 36, 0.85)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: 12
-      }}>
-        {/* Left: Dual-Engine Active Status */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            padding: '6px 14px',
-            borderRadius: 8,
-            background: isBlackoutMode ? 'rgba(255, 42, 95, 0.2)' : 'rgba(0, 242, 254, 0.15)',
-            border: `1px solid ${isBlackoutMode ? '#ff2a5f' : 'var(--accent-cyan)'}`
-          }}>
-            {isBlackoutMode ? (
-              <ShieldAlert size={16} color="#ff4d79" className="radar-ping" />
-            ) : (
-              <Cloud size={16} color="var(--accent-cyan)" />
-            )}
+      {/* 48-Hour Flood Timeline Prediction & Interactive Simulation Bar */}
+      <div className="glass-panel" style={{ padding: '16px 20px', border: '1px solid var(--border-cyan)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 12 }}>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{
+              width: 32,
+              height: 32,
+              borderRadius: 8,
+              background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#ffffff'
+            }}>
+              <Waves size={18} />
+            </div>
             <div>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                ACTIVE ROUTING ENGINE
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-primary)' }}>
+                  Flood Inundation & Timeline Prediction Map
+                </span>
+                <span className="tactical-badge badge-red">
+                  WHERE & WHEN FLOODS OCCUR
+                </span>
               </div>
-              <div style={{ fontSize: 13, fontWeight: 800, color: isBlackoutMode ? '#ff4d79' : 'var(--accent-cyan)' }}>
-                {isBlackoutMode ? 'OFFLINE RESILIENCE ENGINE (On-Device A*)' : 'ONLINE CLOUD ENGINE (GrassHopper + PostGIS)'}
-              </div>
+              <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+                Scrub through timeline steps to visualize rising floodwaters and dynamic evacuation route bypasses.
+              </span>
             </div>
           </div>
 
-          {/* Telemetry Pills */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <span className="code-pill" style={{ color: 'var(--accent-emerald)' }}>
-              <HardDrive size={12} style={{ display: 'inline', marginRight: 4 }} />
-              {activePack.demFormat}
-            </span>
-            <span className="code-pill">
-              <Radio size={12} style={{ display: 'inline', marginRight: 4 }} />
-              BLE / Nearby Mesh (4 Hops)
-            </span>
-            <span className="code-pill" style={{ color: '#00f2fe' }}>
-              <Zap size={12} style={{ display: 'inline', marginRight: 4 }} />
-              Latency: {isBlackoutMode ? '2.8ms (Local)' : '142ms (RPC)'}
-            </span>
+          {/* Timeline Play / Pause / Recenter */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button
+              onClick={() => {
+                if (soundEnabled) playSound('click');
+                setIsSimPlaying(!isSimPlaying);
+              }}
+              className="btn-primary"
+              style={{ padding: '6px 14px', fontSize: 12 }}
+            >
+              {isSimPlaying ? <Pause size={13} /> : <Play size={13} />}
+              <span>{isSimPlaying ? 'Pause' : 'Play Timeline'}</span>
+            </button>
+
+            <button
+              onClick={handleFitRoute}
+              className="btn-ghost"
+              style={{ padding: '6px 10px', fontSize: 12 }}
+              title="Fit entire evacuation path in view"
+            >
+              <Navigation size={13} />
+              <span>Fit Route</span>
+            </button>
           </div>
+
         </div>
 
-        {/* Right: Pre-Cached Regional Pack Selector */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600 }}>
-            PRE-CACHED PACK:
-          </div>
-          <div style={{ display: 'flex', gap: 6, background: 'rgba(0,0,0,0.4)', padding: 3, borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
-            {REGIONAL_PACKS.map(pack => (
+        {/* Timeline Step Buttons */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
+          gap: 6
+        }}>
+          {TIMELINE_FORECAST_STEPS.map((step, idx) => {
+            const isSelected = idx === timelineIndex;
+            return (
               <button
-                key={pack.id}
-                onClick={() => handleSelectPack(pack.id)}
-                className="btn-ghost"
+                key={step.hourOffset}
+                onClick={() => handleTimelineStepClick(idx)}
                 style={{
-                  padding: '5px 10px',
-                  fontSize: 11,
-                  fontWeight: selectedPackId === pack.id ? 700 : 500,
-                  background: selectedPackId === pack.id ? 'rgba(0, 242, 254, 0.2)' : 'transparent',
-                  color: selectedPackId === pack.id ? 'var(--accent-cyan)' : 'var(--text-muted)',
-                  border: selectedPackId === pack.id ? '1px solid var(--border-cyan)' : '1px solid transparent',
-                  borderRadius: 6
+                  background: isSelected ? 'rgba(2, 132, 199, 0.15)' : 'var(--bg-tertiary)',
+                  border: isSelected ? '2px solid var(--accent-cyan)' : '1px solid var(--border-subtle)',
+                  borderRadius: 8,
+                  padding: '8px 6px',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  transition: 'all 0.15s ease'
                 }}
               >
-                {pack.name.split('—')[0]}
+                <div style={{ fontSize: 10, fontWeight: 700, color: isSelected ? 'var(--accent-cyan)' : 'var(--text-muted)' }}>
+                  {step.label}
+                </div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: isSelected ? 'var(--accent-red)' : 'var(--text-primary)', marginTop: 2 }}>
+                  +{step.waterRiseMeters}m Rise
+                </div>
               </button>
-            ))}
-          </div>
+            );
+          })}
+        </div>
+      </div>
 
-          {/* Dual-Mode Fast Toggle */}
+      {/* Map Control Toolbar */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
+        
+        {/* District Pack Switcher */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)' }}>DISTRICT:</span>
+          <select
+            value={selectedPackId}
+            onChange={(e) => handleSelectPack(e.target.value)}
+            style={{
+              padding: '6px 12px',
+              borderRadius: 8,
+              border: '1px solid var(--border-medium)',
+              background: 'var(--bg-secondary)',
+              color: 'var(--text-primary)',
+              fontFamily: 'var(--font-sans)',
+              fontWeight: 600,
+              fontSize: 12
+            }}
+          >
+            {REGIONAL_PACKS.map(p => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Action Controls: GPS Pinpoint, Report Hazard */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button
+            onClick={triggerAutoLocation}
+            className="btn-ghost"
+            style={{ padding: '6px 12px', fontSize: 12 }}
+          >
+            <Crosshair size={14} color="var(--accent-cyan)" />
+            <span>{gpsStatus === 'LOCATING' ? 'Locating...' : 'Locate Me'}</span>
+          </button>
+
           <button
             onClick={() => {
-              if (soundEnabled) playSound('alert');
-              setIsBlackoutMode(!isBlackoutMode);
+              if (soundEnabled) playSound('click');
+              setShowAddHazardModal(true);
             }}
             className="btn-ghost"
-            style={{
-              background: isBlackoutMode ? 'rgba(0, 242, 254, 0.15)' : 'rgba(255, 42, 95, 0.15)',
-              border: `1px solid ${isBlackoutMode ? 'var(--accent-cyan)' : '#ff2a5f'}`,
-              color: isBlackoutMode ? 'var(--accent-cyan)' : '#ff4d79',
-              fontSize: 11,
-              fontWeight: 700
-            }}
-            title="Toggle between Online Cloud & Zero-Network Offline Mesh"
+            style={{ padding: '6px 12px', fontSize: 12, borderColor: 'var(--accent-amber)', color: 'var(--accent-amber)' }}
           >
-            <RefreshCw size={13} />
-            <span>{isBlackoutMode ? 'Switch to Cloud' : 'Simulate Blackout'}</span>
+            <PlusCircle size={14} />
+            <span>Report Road Submersion</span>
           </button>
         </div>
+
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════════════════════
-          MAIN MAP WORKSPACE & INTERACTIVE SIDEBAR
-          ═══════════════════════════════════════════════════════════════════════════ */}
-      <div className="resq-map-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 390px', gap: 16, height: 'calc(100vh - 175px)', minHeight: 650 }}>
-        
-        {/* Map Column */}
-        <div className="resq-map-container" style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-subtle)', boxShadow: '0 8px 30px rgba(0,0,0,0.5)' }}>
-          
-          {/* Leaflet Container */}
-          <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />
+      {/* Main Map Container */}
+      <div style={{ position: 'relative', width: '100%', height: 520, borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-medium)', boxShadow: 'var(--shadow-card)' }}>
+        <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />
 
-          {/* Unified Tactical HUD Container (Zero Overlap Flow) */}
-          <div className="resq-map-hud-container" style={{
-            position: 'absolute',
-            top: 14,
-            left: 14,
-            right: 14,
-            zIndex: 400,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 8,
-            pointerEvents: 'none'
-          }}>
-            {/* Top Tier: Target Sanctuary & Action Buttons */}
-            <div className="resq-map-hud-row1" style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              gap: 8,
-              flexWrap: 'wrap'
-            }}>
-              {/* Target Sanctuary Info */}
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', pointerEvents: 'auto' }}>
-                <div className="glass-panel" style={{ padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <Compass size={16} color="var(--accent-cyan)" />
-                  <div>
-                    <div style={{ fontSize: 9, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Target Elevation Zone</div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#ffffff' }}>
-                      {selectedShelter.name} ({selectedShelter.elevation}m High Ground)
-                    </div>
-                  </div>
-                </div>
-
-                <div className="resq-route-legend glass-panel" style={{
-                  padding: '6px 12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  border: '1px solid rgba(0, 245, 155, 0.4)',
-                  background: 'rgba(7, 10, 18, 0.9)'
-                }}>
-                  <span style={{ width: 12, height: 4, background: '#00f59b', borderRadius: 2 }}></span>
-                  <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--accent-emerald)', letterSpacing: 0.5 }}>
-                    {isBlackoutMode ? 'OFFLINE A* CORRIDOR' : 'CLOUD STREET ROUTE'} ({routeInfo.confidenceScore}%)
-                  </span>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: 6, pointerEvents: 'auto', flexWrap: 'wrap' }}>
-                {/* Focus Evacuation Corridor button */}
-                <button
-                  onClick={handleFitRoute}
-                  className="btn-ghost"
-                  style={{
-                    background: 'rgba(0, 245, 155, 0.15)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid var(--accent-emerald)',
-                    color: 'var(--accent-emerald)',
-                    padding: '6px 10px',
-                    fontSize: 11,
-                    fontWeight: 700
-                  }}
-                  title="Fit map view to entire evacuation corridor and destination shelter"
-                >
-                  <Navigation size={13} />
-                  <span>Focus Route</span>
-                </button>
-
-                {/* Center My Pin button */}
-                <button
-                  onClick={handleRecenterToUser}
-                  className="btn-ghost"
-                  style={{
-                    background: 'rgba(0, 242, 254, 0.15)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid var(--border-cyan)',
-                    color: 'var(--accent-cyan)',
-                    padding: '6px 10px',
-                    fontSize: 11
-                  }}
-                  title="Center map on your location pin (100% Offline)"
-                >
-                  <Crosshair size={13} />
-                  <span>My Pin</span>
-                </button>
-
-                {/* Auto GPS Location Button */}
-                <button
-                  onClick={triggerAutoLocation}
-                  className="btn-ghost"
-                  style={{
-                    background: gpsStatus === 'SYNCED' || gpsStatus === 'OFFLINE_FIX' ? 'rgba(0, 245, 155, 0.15)' : 'rgba(15, 23, 42, 0.85)',
-                    backdropFilter: 'blur(10px)',
-                    border: `1px solid ${gpsStatus === 'SYNCED' || gpsStatus === 'OFFLINE_FIX' ? 'var(--accent-emerald)' : 'var(--border-cyan)'}`,
-                    color: gpsStatus === 'SYNCED' || gpsStatus === 'OFFLINE_FIX' ? 'var(--accent-emerald)' : 'var(--accent-cyan)',
-                    padding: '6px 10px',
-                    fontSize: 11
-                  }}
-                  title="Detect live GPS location or sync with local coordinates"
-                >
-                  <Radio size={13} className={gpsStatus === 'LOCATING' ? 'radar-ping' : ''} />
-                  <span>
-                    {gpsStatus === 'LOCATING' 
-                      ? 'Locating...' 
-                      : gpsStatus === 'SYNCED' 
-                        ? '✓ GPS Synced' 
-                        : gpsStatus === 'OFFLINE_FIX'
-                          ? '✓ Local Fix'
-                          : 'Auto GPS'}
-                  </span>
-                </button>
-
-                {/* Report Hazard button */}
-                <button
-                  onClick={() => setShowAddHazardModal(true)}
-                  className="btn-ghost"
-                  style={{
-                    background: 'rgba(255, 42, 95, 0.15)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255, 42, 95, 0.5)',
-                    color: '#ff4d79',
-                    padding: '6px 10px',
-                    fontSize: 11,
-                    fontWeight: 700
-                  }}
-                >
-                  <PlusCircle size={13} />
-                  <span>Report Hazard</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Second Tier: Non-Overlapping Layer Toggles & Engine Status */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              gap: 8,
-              flexWrap: 'wrap',
-              pointerEvents: 'auto'
-            }}>
-              <div className="glass-panel" style={{
-                padding: '4px 10px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                fontSize: 11
-              }}>
-                <span style={{ color: 'var(--text-muted)', fontWeight: 700, fontSize: 10 }}>LAYERS:</span>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', color: layerVisibility.floodZones ? 'var(--accent-cyan)' : 'var(--text-muted)' }}>
-                  <input
-                    type="checkbox"
-                    checked={layerVisibility.floodZones}
-                    onChange={e => setLayerVisibility({ ...layerVisibility, floodZones: e.target.checked })}
-                  />
-                  Flood Inundation
-                </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', color: layerVisibility.shelters ? 'var(--accent-emerald)' : 'var(--text-muted)' }}>
-                  <input
-                    type="checkbox"
-                    checked={layerVisibility.shelters}
-                    onChange={e => setLayerVisibility({ ...layerVisibility, shelters: e.target.checked })}
-                  />
-                  High-Ground Shelters
-                </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', color: layerVisibility.safeRoute ? '#00f59b' : 'var(--text-muted)' }}>
-                  <input
-                    type="checkbox"
-                    checked={layerVisibility.safeRoute}
-                    onChange={e => setLayerVisibility({ ...layerVisibility, safeRoute: e.target.checked })}
-                  />
-                  Safe A* Route
-                </label>
-              </div>
-
-              <div className="code-pill" style={{ color: isBlackoutMode ? 'var(--accent-emerald)' : 'var(--accent-cyan)', fontSize: 10 }}>
-                {isBlackoutMode ? '🛡️ Offline A* Active (0ms Latency)' : '☁️ Cloud Street Routing Active'}
-              </div>
-            </div>
+        {/* Overlay Telemetry Card (Top Left of Map) */}
+        <div style={{
+          position: 'absolute',
+          top: 14,
+          left: 14,
+          zIndex: 400,
+          background: 'var(--bg-glass)',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid var(--border-subtle)',
+          padding: '12px 16px',
+          borderRadius: 12,
+          maxWidth: 320,
+          boxShadow: 'var(--shadow-card)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)' }}>LIVE ROUTE TELEMETRY</span>
+            <span className="tactical-badge badge-emerald">
+              <CheckCircle2 size={10} /> HIGH GROUND SAFE
+            </span>
           </div>
 
-          {/* Dynamic Water Level / Flood Simulator Floating Bar */}
-          <div className="resq-flood-bar" style={{
-            position: 'absolute',
-            bottom: 20,
-            left: 20,
-            zIndex: 400,
-            background: 'rgba(7, 10, 18, 0.88)',
-            backdropFilter: 'blur(16px)',
-            border: '1px solid var(--border-cyan)',
-            borderRadius: 12,
-            padding: '12px 18px',
-            width: 360,
-            boxShadow: '0 10px 30px rgba(0,0,0,0.6)'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: 'var(--accent-cyan)' }}>
-                <Waves size={16} />
-                <span>FLOOD SURGE SIMULATOR</span>
-              </div>
-              <span className="code-pill" style={{ color: waterLevel > 5 ? '#ff2a5f' : '#00f2fe' }}>
-                +{waterLevel}m SURCHARGE
-              </span>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 4 }}>
+            <span style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)' }}>
+              {effectiveDistanceKm} km
+            </span>
+            <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+              (~{effectiveEstMinutes} mins walking)
+            </span>
+          </div>
+
+          <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 4 }}>
+            Average Elevation: <b style={{ color: 'var(--accent-emerald)' }}>+{routeInfo.avgElevation}m</b> (Gain: +{routeInfo.elevationGain}m)
+          </div>
+
+          {routeInfo.routeNotes && routeInfo.routeNotes.length > 0 && (
+            <div style={{ marginTop: 8, fontSize: 10, color: 'var(--text-muted)', borderTop: '1px solid var(--border-subtle)', paddingTop: 6 }}>
+              {routeInfo.routeNotes[0]}
             </div>
+          )}
+        </div>
 
-            <input
-              type="range"
-              min="0"
-              max="12"
-              step="0.5"
-              value={waterLevel}
-              onChange={(e) => {
-                if (soundEnabled && Math.random() > 0.6) playSound('click');
-                setWaterLevel(parseFloat(e.target.value));
-              }}
-              style={{
-                width: '100%',
-                accentColor: waterLevel > 5 ? '#ff2a5f' : '#00f2fe',
-                cursor: 'pointer',
-                height: 6
-              }}
-            />
-
-            <div className="resq-flood-labels" style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
-              <span>0m (Baseline)</span>
-              <span>+4m (Riverbank Breach)</span>
-              <span>+8m (Flash Flood)</span>
-              <span>+12m (Catastrophic)</span>
+        {/* Sector Inundation ETA Countdown Card (Bottom Left of Map) */}
+        <div style={{
+          position: 'absolute',
+          bottom: 14,
+          left: 14,
+          zIndex: 400,
+          background: 'var(--bg-glass)',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid var(--border-subtle)',
+          padding: '10px 14px',
+          borderRadius: 10,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          boxShadow: 'var(--shadow-card)'
+        }}>
+          <div style={{
+            width: 32,
+            height: 32,
+            borderRadius: 8,
+            background: 'rgba(225, 29, 72, 0.12)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--accent-red)'
+          }}>
+            <Clock size={16} />
+          </div>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent-red)' }}>
+              BREACH ETA: ZONE 2 INUNDATION IN 1h 45m
+            </div>
+            <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>
+              Water rise: +{waterLevel}m • Peak crest expected at 19:30 IST
             </div>
           </div>
         </div>
 
-        {/* ═══════════════════════════════════════════════════════════════════════════
-            SIDEBAR INTELLIGENCE: DYNAMIC CONFIDENCE SCORE & OFFLINE RESILIENCE
-            ═══════════════════════════════════════════════════════════════════════════ */}
-        <div className="resq-map-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}>
-          
-          {/* Safe Route Confidence Card & Breakdown */}
-          <div className="glass-panel" style={{ padding: 18, border: '1px solid var(--border-cyan)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Navigation size={18} color="var(--accent-cyan)" />
-                <span style={{ fontSize: 14, fontWeight: 700 }}>DYNAMIC ROUTE CONFIDENCE</span>
-              </div>
-              <span className={`tactical-badge ${routeInfo.confidenceScore > 75 ? 'badge-emerald' : routeInfo.confidenceScore > 50 ? 'badge-amber' : 'badge-red'}`}>
-                {routeInfo.confidenceScore}% CONFIDENCE
-              </span>
-            </div>
+      </div>
 
-            {/* Key Metrics Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
-              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '10px 12px', borderRadius: 8 }}>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>DISTANCE / TIME</div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: '#ffffff' }}>
-                  {effectiveDistanceKm} km <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>({effectiveEstMinutes}m walk)</span>
-                </div>
-              </div>
-              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '10px 12px', borderRadius: 8 }}>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>ELEVATION GAIN</div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--accent-emerald)' }}>
-                  +{routeInfo.elevationGain}m <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>high-ground</span>
-                </div>
-              </div>
-            </div>
+      {/* High-Ground Evacuation Shelter Cards */}
+      <div>
+        <h3 style={{ fontSize: 15, fontWeight: 800, marginBottom: 10, color: 'var(--text-primary)' }}>
+          Designated Elevated High-Ground Sanctuaries ({activeShelters.length} Available)
+        </h3>
 
-            {/* 4 Core Innovation Sub-Score Gauges (from Presentation Slide 2) */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14, background: 'rgba(0,0,0,0.25)', padding: 10, borderRadius: 8 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                SAFETY CONFIDENCE BREAKDOWN
-              </div>
-
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
-                  <span>🏔️ Elevation Clearance (+{routeInfo.elevationGain}m)</span>
-                  <span style={{ color: 'var(--accent-emerald)', fontWeight: 700 }}>98%</span>
-                </div>
-                <div style={{ height: 4, background: 'rgba(255,255,255,0.1)', borderRadius: 2, marginTop: 4 }}>
-                  <div style={{ width: '98%', height: '100%', background: '#00f59b', borderRadius: 2 }} />
-                </div>
-              </div>
-
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
-                  <span>🌊 Inundation Surcharge Tolerance</span>
-                  <span style={{ color: waterLevel > 5 ? '#ff2a5f' : 'var(--accent-cyan)', fontWeight: 700 }}>
-                    {Math.max(20, 100 - waterLevel * 8)}%
-                  </span>
-                </div>
-                <div style={{ height: 4, background: 'rgba(255,255,255,0.1)', borderRadius: 2, marginTop: 4 }}>
-                  <div style={{ width: `${Math.max(20, 100 - waterLevel * 8)}%`, height: '100%', background: waterLevel > 5 ? '#ff2a5f' : '#00f2fe', borderRadius: 2 }} />
-                </div>
-              </div>
-
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
-                  <span>📡 P2P BLE Hazard Consensus</span>
-                  <span style={{ color: 'var(--accent-emerald)', fontWeight: 700 }}>4/4 Verified</span>
-                </div>
-                <div style={{ height: 4, background: 'rgba(255,255,255,0.1)', borderRadius: 2, marginTop: 4 }}>
-                  <div style={{ width: '100%', height: '100%', background: '#00f59b', borderRadius: 2 }} />
-                </div>
-              </div>
-            </div>
-
-            {/* Dynamic Safety Reasoning from On-Device A* */}
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <div style={{ background: 'rgba(0, 245, 155, 0.08)', border: '1px solid rgba(0, 245, 155, 0.3)', padding: '6px 10px', borderRadius: 6, color: 'var(--accent-emerald)', fontSize: 11, fontWeight: 600 }}>
-                🛣️ {isBlackoutMode ? 'On-Device A*: Evaluated via pre-cached 30m SRTM DEM Matrix' : 'Street-Snapped: Follows real public roadways & footpaths'}
-              </div>
-              {routeInfo.routeNotes.map((note, idx) => (
-                <div key={idx} style={{ background: 'rgba(255,255,255,0.03)', padding: '6px 10px', borderRadius: 6 }}>
-                  {note}
-                </div>
-              ))}
-            </div>
-
-            {/* Offline Store-and-Forward SOS Dispatch Button */}
-            <div style={{ marginTop: 14 }}>
-              <button
-                onClick={handleTriggerStoreAndForwardSos}
-                className="btn-ghost"
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 }}>
+          {activeShelters.map((shelter) => {
+            const isSelected = shelter.id === selectedShelterId;
+            return (
+              <div
+                key={shelter.id}
+                onClick={() => {
+                  if (soundEnabled) playSound('click');
+                  setSelectedShelterId(shelter.id);
+                }}
+                className="glass-panel"
                 style={{
-                  width: '100%',
-                  background: sosDispatched ? 'rgba(0, 245, 155, 0.15)' : 'rgba(255, 42, 95, 0.15)',
-                  border: `1px solid ${sosDispatched ? 'var(--accent-emerald)' : '#ff2a5f'}`,
-                  color: sosDispatched ? 'var(--accent-emerald)' : '#ff4d79',
-                  fontWeight: 700,
-                  fontSize: 12,
-                  padding: '10px 14px',
-                  justifyContent: 'center'
+                  padding: 16,
+                  cursor: 'pointer',
+                  border: isSelected ? '2px solid var(--accent-emerald)' : '1px solid var(--border-subtle)',
+                  background: isSelected ? 'rgba(5, 150, 105, 0.08)' : 'var(--bg-card)',
+                  transition: 'all 0.15s ease'
                 }}
               >
-                <Share2 size={15} />
-                <span>{sosDispatched ? `✓ Store-and-Forward SOS Propagating (Hop ${sosHopProgress}/3)` : 'Transmit Offline SOS (BLE Mesh)'}</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Shelter Selectors */}
-          <div className="glass-panel" style={{ padding: 18 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Mountain size={16} color="var(--accent-emerald)" />
-              <span>HIGH-GROUND RESCUE SANCTUARIES</span>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {activeShelters.map(shelter => {
-                const isSelected = shelter.id === selectedShelterId;
-                const percentFilled = Math.round((shelter.currentOccupants / shelter.capacity) * 100);
-
-                return (
-                  <div
-                    key={shelter.id}
-                    onClick={() => {
-                      if (soundEnabled) playSound('click');
-                      setSelectedShelterId(shelter.id);
-                    }}
-                    style={{
-                      background: isSelected ? 'rgba(0, 245, 155, 0.08)' : 'rgba(0,0,0,0.25)',
-                      border: `1px solid ${isSelected ? 'var(--accent-emerald)' : 'var(--border-subtle)'}`,
-                      borderRadius: 8,
-                      padding: '10px 12px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: isSelected ? 'var(--accent-emerald)' : '#ffffff' }}>
-                        {shelter.name}
-                      </span>
-                      <span className="code-pill">
-                        +{shelter.elevation}m DEM
-                      </span>
-                    </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
-                      <span>Capacity: {shelter.currentOccupants} / {shelter.capacity} ({percentFilled}%)</span>
-                      <span style={{ color: 'var(--accent-cyan)' }}>GeoPackage</span>
-                    </div>
-
-                    <div style={{ height: 4, background: 'rgba(255,255,255,0.1)', borderRadius: 2, marginTop: 6, overflow: 'hidden' }}>
-                      <div style={{ width: `${percentFilled}%`, height: '100%', background: percentFilled > 80 ? '#ff2a5f' : '#00f59b' }} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Active P2P Hazard Feed & BFT Consensus */}
-          <div className="glass-panel" style={{ padding: 18, flex: 1 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <AlertTriangle size={16} color="#ff4d79" />
-                <span>P2P HAZARDS CONSENSUS</span>
-              </div>
-              <span className="code-pill" style={{ color: 'var(--accent-emerald)' }}>
-                BLE GOSSIP
-              </span>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 180, overflowY: 'auto' }}>
-              {hazards.map(h => (
-                <div key={h.id} style={{ background: 'rgba(255, 42, 95, 0.07)', borderLeft: '3px solid #ff2a5f', padding: '8px 10px', borderRadius: '0 6px 6px 0' }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: '#f8fafc' }}>{h.title}</div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
-                    <span>{h.reportedBy}</span>
-                    <span style={{ color: 'var(--accent-emerald)' }}>✓ {h.consensusVotes} votes</span>
-                  </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                  <h4 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
+                    {shelter.name}
+                  </h4>
+                  <span className="tactical-badge badge-emerald">
+                    +{shelter.elevation}m
+                  </span>
                 </div>
-              ))}
-            </div>
-          </div>
 
+                <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 8 }}>
+                  Capacity: <b>{shelter.currentOccupants} / {shelter.capacity}</b> ({Math.round((shelter.currentOccupants/shelter.capacity)*100)}% Full)
+                </div>
+
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                  {shelter.resources.slice(0, 3).map((res, i) => (
+                    <span key={i} style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}>
+                      {res}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
-
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════════════════════
-          MODAL: REPORT ROAD HAZARD (WITH OFFLINE P2P ATTESTATION)
-          ═══════════════════════════════════════════════════════════════════════════ */}
+      {/* Report Road Submersion Modal */}
       {showAddHazardModal && (
         <div style={{
           position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          zIndex: 9999,
-          background: 'rgba(0, 0, 0, 0.75)',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.6)',
           backdropFilter: 'blur(8px)',
+          zIndex: 1100,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center'
+          justifyContent: 'center',
+          padding: 20
         }}>
-          <div className="glass-panel" style={{ width: 440, maxWidth: '92vw', padding: 24, border: '1px solid #ff2a5f' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#ff4d79', marginBottom: 12 }}>
-              <AlertTriangle size={20} />
-              <h3 style={{ margin: 0, fontSize: 16 }}>Broadcast P2P Road Hazard</h3>
-            </div>
-
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>
-              Signal will be signed by your device DID and propagated through local Bluetooth/Wi-Fi Direct mesh without needing cellular network.
+          <div className="glass-panel" style={{ width: '100%', maxWidth: 440, padding: 24 }}>
+            <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 12 }}>
+              Report Road Submersion / Hazard
+            </h3>
+            <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 16 }}>
+              Reports are saved locally to IndexedDB when offline and broadcast to emergency responders.
             </p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <form onSubmit={handleAddHazardSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div>
-                <label style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>HAZARD TYPE</label>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 4 }}>
+                  HAZARD CATEGORY
+                </label>
                 <select
                   value={newHazardType}
                   onChange={(e) => setNewHazardType(e.target.value)}
-                  style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border-subtle)', color: '#ffffff', padding: 8, borderRadius: 6 }}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    borderRadius: 8,
+                    border: '1px solid var(--border-medium)',
+                    background: 'var(--bg-input)',
+                    color: 'var(--text-primary)',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: 13
+                  }}
                 >
                   <option value="ROAD_SUBMERGED">Road Inundated / Submerged</option>
                   <option value="LANDSLIDE">Mudslide / Hill Debris</option>
-                  <option value="POWER_LINE_DOWN">Fallen Electrical Pole / Live Wire</option>
-                  <option value="BRIDGE_COLLAPSE">Bridge Impassable</option>
-                  <option value="GRIDLOCK">Severe Vehicle Gridlock</option>
+                  <option value="POWER_LINE_DOWN">Fallen Electric Wire</option>
+                  <option value="BRIDGE_COLLAPSE">Culvert / Bridge Impassable</option>
                 </select>
               </div>
 
               <div>
-                <label style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>DESCRIPTION / LOCATION LANDMARK</label>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 4 }}>
+                  LOCATION DETAILS & WATER DEPTH
+                </label>
                 <input
                   type="text"
-                  placeholder="e.g. 1.5m flood water near GT Road Underpass"
                   value={newHazardDesc}
                   onChange={(e) => setNewHazardDesc(e.target.value)}
-                  style={{ width: '100%', background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border-subtle)', color: '#ffffff', padding: '8px 12px', borderRadius: 6 }}
+                  placeholder="e.g. Underpass flooded with ~1.5m standing water"
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    borderRadius: 8,
+                    border: '1px solid var(--border-medium)',
+                    background: 'var(--bg-input)',
+                    color: 'var(--text-primary)',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: 13
+                  }}
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 10 }}>
+              <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
                 <button
+                  type="button"
                   onClick={() => setShowAddHazardModal(false)}
                   className="btn-ghost"
-                  style={{ padding: '8px 14px' }}
+                  style={{ flex: 1, justifyContent: 'center' }}
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={handleReportHazard}
-                  className="btn-sos"
-                  style={{ padding: '8px 16px', fontSize: 12 }}
+                  type="submit"
+                  className="btn-primary"
+                  style={{ flex: 1, justifyContent: 'center' }}
                 >
-                  Sign & Broadcast
+                  Submit Report
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ═══════════════════════════════════════════════════════════════════════════
-          MODAL: LIVE P2P MESH GOSSIP HOP PROPAGATION VISUALIZER
-          ═══════════════════════════════════════════════════════════════════════════ */}
-      {showMeshGossipModal && meshGossipItem && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          zIndex: 9999,
-          background: 'rgba(0, 0, 0, 0.85)',
-          backdropFilter: 'blur(10px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          <div className="glass-panel" style={{ width: 500, maxWidth: '92vw', padding: 24, border: '1px solid var(--border-cyan)', textAlign: 'center' }}>
-            <Radio size={36} color="var(--accent-cyan)" className="radar-ping" style={{ margin: '0 auto 12px auto' }} />
-            <h3 style={{ margin: '0 0 6px 0', fontSize: 18, color: '#ffffff' }}>
-              P2P Mesh Gossip Propagation Active
-            </h3>
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 20 }}>
-              Zero-Hardware Bluetooth & Wi-Fi Direct Mesh is propagating hazard payload across nearby nodes.
-            </p>
-
-            {/* Animated Hop Step Diagram */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 20 }}>
-              <div style={{
-                background: meshGossipHop >= 1 ? 'rgba(0, 242, 254, 0.15)' : 'rgba(0,0,0,0.3)',
-                border: `1px solid ${meshGossipHop >= 1 ? 'var(--accent-cyan)' : 'var(--border-subtle)'}`,
-                borderRadius: 8,
-                padding: 12
-              }}>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>HOP 1</div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#ffffff', marginTop: 4 }}>Your Device</div>
-                <div style={{ fontSize: 10, color: meshGossipHop >= 1 ? '#00f59b' : 'var(--text-muted)', marginTop: 4 }}>
-                  {meshGossipHop >= 1 ? '✓ Signed & Sent' : 'Queued'}
-                </div>
-              </div>
-
-              <div style={{
-                background: meshGossipHop >= 2 ? 'rgba(0, 245, 155, 0.15)' : 'rgba(0,0,0,0.3)',
-                border: `1px solid ${meshGossipHop >= 2 ? '#00f59b' : 'var(--border-subtle)'}`,
-                borderRadius: 8,
-                padding: 12
-              }}>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>HOP 2</div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#ffffff', marginTop: 4 }}>Nearby Mobile Peer</div>
-                <div style={{ fontSize: 10, color: meshGossipHop >= 2 ? '#00f59b' : 'var(--text-muted)', marginTop: 4 }}>
-                  {meshGossipHop >= 2 ? '✓ Forwarded' : 'Waiting...'}
-                </div>
-              </div>
-
-              <div style={{
-                background: meshGossipHop >= 3 ? 'rgba(168, 85, 247, 0.15)' : 'rgba(0,0,0,0.3)',
-                border: `1px solid ${meshGossipHop >= 3 ? '#c084fc' : 'var(--border-subtle)'}`,
-                borderRadius: 8,
-                padding: 12
-              }}>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>HOP 3</div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#ffffff', marginTop: 4 }}>SDRF Command Camp</div>
-                <div style={{ fontSize: 10, color: meshGossipHop >= 3 ? '#00f59b' : 'var(--text-muted)', marginTop: 4 }}>
-                  {meshGossipHop >= 3 ? '✓ Synced & Re-routed' : 'Routing...'}
-                </div>
-              </div>
-            </div>
-
-            <div style={{ background: 'rgba(0,0,0,0.4)', padding: '10px 14px', borderRadius: 8, fontSize: 12, color: 'var(--accent-emerald)', marginBottom: 16 }}>
-              🛡️ On-Device A* Routing has automatically updated and avoided this blocked coordinates.
-            </div>
-
-            <button
-              onClick={() => setShowMeshGossipModal(false)}
-              className="btn-ghost"
-              style={{ padding: '8px 24px', background: 'rgba(0, 242, 254, 0.2)', color: 'var(--accent-cyan)' }}
-            >
-              Done
-            </button>
+            </form>
           </div>
         </div>
       )}

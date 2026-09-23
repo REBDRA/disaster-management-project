@@ -1,12 +1,65 @@
-/* RESQ Web3 Custom Cyber-Emergency Tactical Design System */
-:root {
-  --bg-primary: #070a12;
+/* RESQ Next-Gen Dual-Theme Tactical Civic Design System */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+/* Default Theme: LIGHT THEME (Primary) */
+:root,
+[data-theme="light"] {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  --bg-card: rgba(255, 255, 255, 0.94);
+  --bg-card-hover: #ffffff;
+  --bg-glass: rgba(255, 255, 255, 0.88);
+  --bg-navbar: rgba(255, 255, 255, 0.92);
+  --bg-input: #ffffff;
+  
+  --border-subtle: rgba(15, 23, 42, 0.08);
+  --border-medium: rgba(15, 23, 42, 0.14);
+  --border-strong: #cbd5e1;
+  --border-cyan: rgba(2, 132, 199, 0.3);
+  --border-active: #0284c7;
+
+  --accent-cyan: #0284c7;
+  --accent-blue: #2563eb;
+  --accent-emerald: #059669;
+  --accent-amber: #d97706;
+  --accent-red: #e11d48;
+  --accent-purple: #7c3aed;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+
+  --shadow-card: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+  --shadow-float: 0 12px 36px -4px rgba(15, 23, 42, 0.12);
+  --shadow-glow-cyan: 0 0 20px rgba(2, 132, 199, 0.15);
+  --shadow-glow-red: 0 0 20px rgba(225, 29, 72, 0.2);
+  --shadow-glow-emerald: 0 0 20px rgba(5, 150, 105, 0.15);
+
+  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --btn-ghost-bg: rgba(15, 23, 42, 0.04);
+  --btn-ghost-hover: rgba(15, 23, 42, 0.08);
+  --tab-bar-bg: rgba(241, 245, 249, 0.95);
+  --code-pill-bg: #e2e8f0;
+  --code-pill-text: #0f172a;
+}
+
+/* DARK THEME */
+[data-theme="dark"] {
+  --bg-primary: #070a13;
   --bg-secondary: #0d1322;
-  --bg-card: rgba(15, 23, 42, 0.75);
-  --bg-card-hover: rgba(22, 34, 60, 0.85);
-  --bg-glass: rgba(13, 20, 36, 0.65);
+  --bg-tertiary: #131b2e;
+  --bg-card: rgba(15, 23, 42, 0.85);
+  --bg-card-hover: rgba(22, 34, 60, 0.95);
+  --bg-glass: rgba(13, 20, 36, 0.8);
+  --bg-navbar: rgba(7, 10, 19, 0.9);
+  --bg-input: rgba(15, 23, 42, 0.9);
   
   --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-medium: rgba(255, 255, 255, 0.15);
+  --border-strong: rgba(255, 255, 255, 0.25);
   --border-cyan: rgba(0, 242, 254, 0.25);
   --border-active: #00f2fe;
 
@@ -21,12 +74,17 @@
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
 
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.45);
+  --shadow-float: 0 16px 40px rgba(0, 0, 0, 0.65);
   --shadow-glow-cyan: 0 0 25px rgba(0, 242, 254, 0.25);
   --shadow-glow-red: 0 0 25px rgba(255, 42, 95, 0.35);
   --shadow-glow-emerald: 0 0 25px rgba(0, 245, 155, 0.25);
 
-  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --btn-ghost-bg: rgba(255, 255, 255, 0.05);
+  --btn-ghost-hover: rgba(255, 255, 255, 0.1);
+  --tab-bar-bg: rgba(0, 0, 0, 0.4);
+  --code-pill-bg: rgba(0, 0, 0, 0.4);
+  --code-pill-text: #00f2fe;
 }
 
 * {
@@ -41,13 +99,26 @@ body {
   font-family: var(--font-sans);
   min-height: 100vh;
   overflow-x: hidden;
+  transition: background-color 0.25s ease, color 0.25s ease;
+  -webkit-font-smoothing: antialiased;
+}
+
+[data-theme="light"] body {
+  background-image: 
+    radial-gradient(circle at 10% 10%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),
+    radial-gradient(circle at 90% 90%, rgba(225, 29, 72, 0.03) 0%, transparent 45%),
+    linear-gradient(rgba(15, 23, 42, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.02) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 28px 28px, 28px 28px;
+}
+
+[data-theme="dark"] body {
   background-image: 
     radial-gradient(circle at 15% 15%, rgba(0, 242, 254, 0.05) 0%, transparent 40%),
     radial-gradient(circle at 85% 85%, rgba(255, 42, 95, 0.04) 0%, transparent 40%),
     linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
   background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
-  -webkit-font-smoothing: antialiased;
 }
 
 /* Custom Scrollbars */
@@ -59,40 +130,41 @@ body {
   background: var(--bg-primary);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--border-strong);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--accent-cyan);
 }
 
-/* Glassmorphic Panel Utility */
+/* Glassmorphic & Modern Surface Utilities */
 .glass-panel {
   background: var(--bg-card);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--border-subtle);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+  transition: all 0.2s ease;
 }
 
 .glass-panel-cyan {
-  background: rgba(10, 25, 45, 0.7);
+  background: var(--bg-card);
   backdrop-filter: blur(14px);
   border: 1px solid var(--border-cyan);
-  border-radius: 12px;
+  border-radius: 14px;
   box-shadow: var(--shadow-glow-cyan);
 }
 
 .glass-panel-red {
-  background: rgba(35, 10, 20, 0.7);
+  background: var(--bg-card);
   backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 42, 95, 0.35);
-  border-radius: 12px;
+  border: 1px solid rgba(225, 29, 72, 0.35);
+  border-radius: 14px;
   box-shadow: var(--shadow-glow-red);
 }
 
-/* Tactical glowing badges */
+/* Tactical Glowing & Clean Badges */
 .tactical-badge {
   display: inline-flex;
   align-items: center;
@@ -100,89 +172,109 @@ body {
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   font-family: var(--font-mono);
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
   text-transform: uppercase;
 }
 
-.badge-cyan {
+[data-theme="light"] .badge-cyan {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+[data-theme="dark"] .badge-cyan {
   background: rgba(0, 242, 254, 0.12);
   color: var(--accent-cyan);
   border: 1px solid rgba(0, 242, 254, 0.3);
 }
 
-.badge-red {
+[data-theme="light"] .badge-red {
+  background: #ffe4e6;
+  color: #be123c;
+  border: 1px solid #fecdd3;
+}
+[data-theme="dark"] .badge-red {
   background: rgba(255, 42, 95, 0.15);
   color: var(--accent-red);
   border: 1px solid rgba(255, 42, 95, 0.4);
 }
 
-.badge-emerald {
+[data-theme="light"] .badge-emerald {
+  background: #d1fae5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+[data-theme="dark"] .badge-emerald {
   background: rgba(0, 245, 155, 0.12);
   color: var(--accent-emerald);
   border: 1px solid rgba(0, 245, 155, 0.35);
 }
 
-.badge-amber {
+[data-theme="light"] .badge-amber {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+[data-theme="dark"] .badge-amber {
   background: rgba(245, 158, 11, 0.12);
   color: var(--accent-amber);
   border: 1px solid rgba(245, 158, 11, 0.35);
 }
 
-/* Neon Glow Buttons */
+/* Primary & Action Buttons */
 .btn-primary {
-  background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-  color: #040914;
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+  color: #ffffff;
   border: none;
   font-weight: 700;
   font-family: var(--font-sans);
   padding: 10px 18px;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   transition: all 0.2s ease;
-  box-shadow: 0 0 15px rgba(0, 242, 254, 0.35);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
 }
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 0 25px rgba(0, 242, 254, 0.6);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
 }
 
 .btn-sos {
-  background: linear-gradient(135deg, #ff2a5f 0%, #ff5e36 100%);
+  background: linear-gradient(135deg, #e11d48 0%, #ea580c 100%);
   color: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.3);
   font-weight: 800;
   letter-spacing: 1px;
   font-family: var(--font-sans);
-  padding: 10px 20px;
-  border-radius: 8px;
+  padding: 9px 20px;
+  border-radius: 10px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   animation: pulse-sos 2s infinite ease-in-out;
-  box-shadow: 0 0 20px rgba(255, 42, 95, 0.6);
+  box-shadow: 0 4px 16px rgba(225, 29, 72, 0.4);
   transition: all 0.2s ease;
 }
 
 .btn-sos:hover {
-  transform: scale(1.04);
-  box-shadow: 0 0 30px rgba(255, 42, 95, 0.9);
+  transform: scale(1.03);
+  box-shadow: 0 6px 24px rgba(225, 29, 72, 0.6);
 }
 
 .btn-ghost {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--btn-ghost-bg);
   color: var(--text-primary);
   border: 1px solid var(--border-subtle);
   padding: 8px 14px;
-  border-radius: 8px;
+  border-radius: 9px;
   font-family: var(--font-sans);
-  font-weight: 500;
+  font-weight: 600;
   font-size: 13px;
   cursor: pointer;
   display: inline-flex;
@@ -192,12 +284,12 @@ body {
 }
 
 .btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--btn-ghost-hover);
+  border-color: var(--border-medium);
 }
 
 .btn-ghost.active {
-  background: rgba(0, 242, 254, 0.15);
+  background: rgba(2, 132, 199, 0.12);
   border-color: var(--accent-cyan);
   color: var(--accent-cyan);
 }
@@ -205,19 +297,10 @@ body {
 /* Animations */
 @keyframes pulse-sos {
   0%, 100% {
-    box-shadow: 0 0 15px rgba(255, 42, 95, 0.5);
+    box-shadow: 0 0 12px rgba(225, 29, 72, 0.35);
   }
   50% {
-    box-shadow: 0 0 30px rgba(255, 42, 95, 0.9);
-  }
-}
-
-@keyframes radar-sweep {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
+    box-shadow: 0 0 24px rgba(225, 29, 72, 0.7);
   }
 }
 
@@ -250,38 +333,68 @@ body {
   }
 }
 
-/* Leaflet Dark Customization */
+/* Leaflet Theming */
 .leaflet-container {
-  background: #070c18 !important;
   font-family: var(--font-sans) !important;
+  transition: all 0.25s ease;
 }
 
-/* Tactical Dark Inversion for OpenStreetMap (Zero API Key & Zero Watermarks) */
-.tactical-dark-tile-img {
+[data-theme="light"] .leaflet-container {
+  background: #e2e8f0 !important;
+}
+
+[data-theme="dark"] .leaflet-container {
+  background: #070c18 !important;
+}
+
+/* Dark Inversion Filter for OpenStreetMap */
+[data-theme="dark"] .tactical-dark-tile-img {
   filter: brightness(0.55) invert(1) contrast(2.8) hue-rotate(205deg) saturate(0.35) brightness(0.75) !important;
   -webkit-filter: brightness(0.55) invert(1) contrast(2.8) hue-rotate(205deg) saturate(0.35) brightness(0.75) !important;
 }
 
-.leaflet-popup-content-wrapper {
+[data-theme="light"] .tactical-dark-tile-img {
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+[data-theme="light"] .leaflet-popup-content-wrapper {
+  background: rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(10px);
+  color: #0f172a !important;
+  border: 1px solid var(--border-medium) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15) !important;
+}
+
+[data-theme="light"] .leaflet-popup-tip {
+  background: #ffffff !important;
+}
+
+[data-theme="dark"] .leaflet-popup-content-wrapper {
   background: rgba(13, 20, 36, 0.95) !important;
   backdrop-filter: blur(10px);
   color: #f8fafc !important;
   border: 1px solid var(--border-cyan) !important;
-  border-radius: 8px !important;
+  border-radius: 10px !important;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7) !important;
 }
 
-.leaflet-popup-tip {
+[data-theme="dark"] .leaflet-popup-tip {
   background: #0d1424 !important;
 }
 
-/* Code & Telemetry pill */
+/* Code & Telemetry Pill */
 .code-pill {
   font-family: var(--font-mono);
   font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: var(--accent-cyan);
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--code-pill-bg);
+  border: 1px solid var(--border-subtle);
+  color: var(--code-pill-text);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }

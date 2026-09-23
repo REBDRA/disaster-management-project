@@ -3,28 +3,32 @@ import {
   ShieldAlert, 
   CheckCircle2, 
   Radio, 
-  X 
+  X, 
+  PhoneCall, 
+  MapPin, 
+  Battery, 
+  Send,
+  CloudOff,
+  Wifi
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { signSOSPacket } from '../utils/web3Mock';
+import { queueOfflineSOS, isOnline } from '../utils/offlineManager';
 import { playSound } from '../utils/audioEffects';
 import { broadcastSOSToApi } from '../utils/apiClient';
 
-export default function SosModal({ isOpen, onClose, walletAddress, soundEnabled, onSosBroadcast }) {
+export default function SosModal({ isOpen, onClose, soundEnabled, onSosBroadcast }) {
   const [triageCategory, setTriageCategory] = useState('TRAPPED_FLOOD');
+  const [phone, setPhone] = useState('+91-98765-43210');
   const [notes, setNotes] = useState('');
-  const [signedPacket, setSignedPacket] = useState(null);
+  const [dispatchedSos, setDispatchedSos] = useState(null);
   const [isSending, setIsSending] = useState(false);
   const [liveGps, setLiveGps] = useState([26.183, 91.745]);
-  const [isGpsLive, setIsGpsLive] = useState(false);
 
-  // Auto-detect user GPS on modal open
   React.useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           setLiveGps([pos.coords.latitude, pos.coords.longitude]);
-          setIsGpsLive(true);
         },
         () => {}
       );
@@ -40,16 +44,25 @@ export default function SosModal({ isOpen, onClose, walletAddress, soundEnabled,
     if (soundEnabled) playSound('sos');
 
     setTimeout(() => {
-      const rawPayload = {
+      const sosPayload = {
+        sosId: `SOS-IN-${Date.now().toString().slice(-6)}`,
         category: triageCategory,
-        notes: notes || 'Immediate evacuation assistance requested via ResQ DePIN Mesh',
+        phone: phone || 'Emergency Citizen Contact',
+        notes: notes || 'Immediate evacuation required at GPS coordinates',
         coords: liveGps,
         elevation: 49.2,
-        battery: 84
+        battery: 88,
+        dispatchedAt: new Date().toLocaleTimeString(),
+        status: 'DISPATCHED_TO_NDRF'
       };
 
-      const signed = signSOSPacket(rawPayload, walletAddress);
-      setSignedPacket(signed);
+      // Store locally if offline
+      queueOfflineSOS(sosPayload);
+
+      // Attempt API broadcast
+      broadcastSOSToApi(sosPayload);
+
+      setDispatchedSos(sosPayload);
       setIsSending(false);
 
       if (soundEnabled) playSound('success');
@@ -60,13 +73,10 @@ export default function SosModal({ isOpen, onClose, walletAddress, soundEnabled,
         origin: { y: 0.6 }
       });
 
-      // Post to custom FastAPI backend
-      broadcastSOSToApi(signed);
-
       if (onSosBroadcast) {
-        onSosBroadcast(signed);
+        onSosBroadcast(sosPayload);
       }
-    }, 800);
+    }, 700);
   };
 
   return (
@@ -77,174 +87,203 @@ export default function SosModal({ isOpen, onClose, walletAddress, soundEnabled,
       width: '100vw',
       height: '100vh',
       zIndex: 9999,
-      background: 'rgba(5, 8, 15, 0.85)',
+      background: 'rgba(5, 8, 15, 0.75)',
       backdropFilter: 'blur(12px)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       padding: 16
     }}>
-      <div className="glass-panel resq-sos-modal" style={{
+      <div className="glass-panel" style={{
         width: 520,
         maxHeight: '90vh',
         overflowY: 'auto',
-        border: '1px solid rgba(255, 42, 95, 0.5)',
-        boxShadow: '0 0 40px rgba(255, 42, 95, 0.3)',
+        border: '1px solid var(--accent-red)',
+        boxShadow: 'var(--shadow-glow-red)',
         padding: 24
       }}>
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
               width: 36,
               height: 36,
-              borderRadius: '50%',
-              background: 'rgba(255, 42, 95, 0.2)',
+              borderRadius: 8,
+              background: 'linear-gradient(135deg, #e11d48, #ea580c)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '1px solid #ff2a5f'
+              color: '#ffffff'
             }}>
-              <ShieldAlert size={20} color="#ff2a5f" />
+              <ShieldAlert size={20} />
             </div>
             <div>
-              <div className="resq-sos-header-title" style={{ fontSize: 16, fontWeight: 800, color: '#ffffff', letterSpacing: 0.5 }}>
-                BROADCAST EMERGENCY SOS BEACON
-              </div>
-              <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-                EIP-712 Tamper-Proof Cryptographic Distress Attestation
-              </div>
+              <h2 style={{ fontSize: 18, fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+                Citizen Emergency SOS Beacon
+              </h2>
+              <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+                NDRF 112 & SDRF Emergency Triage Network
+              </span>
             </div>
           </div>
 
-          <button 
+          <button
             onClick={onClose}
             className="btn-ghost"
-            style={{ padding: '4px 8px' }}
+            style={{ padding: '6px 8px', borderRadius: '50%' }}
           >
             <X size={16} />
           </button>
         </div>
 
-        {!signedPacket ? (
-          <form onSubmit={handleSendSOS}>
-            {/* Triage Selector */}
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 8 }}>
-                SELECT EMERGENCY CLASSIFICATION
-              </label>
-              
-              <div className="resq-sos-triage-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                {[
-                  { id: 'CRITICAL_LIFE', label: '🚨 Life Threatening', desc: 'Medical emergency / injured' },
-                  { id: 'TRAPPED_FLOOD', label: '🌊 Trapped by Water', desc: 'Water entering structure' },
-                  { id: 'EVAC_ASSIST', label: '🧓 Evac Assistance', desc: 'Infants / Senior citizens' },
-                  { id: 'FOOD_WATER', label: '💧 Critical Supplies', desc: 'Drinking water exhausted' }
-                ].map(item => (
-                  <div
-                    key={item.id}
-                    onClick={() => {
-                      if (soundEnabled) playSound('click');
-                      setTriageCategory(item.id);
-                    }}
-                    style={{
-                      background: triageCategory === item.id ? 'rgba(255, 42, 95, 0.15)' : 'rgba(0,0,0,0.3)',
-                      border: `1px solid ${triageCategory === item.id ? '#ff2a5f' : 'var(--border-subtle)'}`,
-                      borderRadius: 8,
-                      padding: 10,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    <div style={{ fontSize: 12, fontWeight: 700, color: triageCategory === item.id ? '#ff4d79' : '#ffffff' }}>
-                      {item.label}
-                    </div>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
-                      {item.desc}
-                    </div>
-                  </div>
-                ))}
+        {dispatchedSos ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{
+              background: 'rgba(5, 150, 105, 0.12)',
+              border: '1px solid var(--accent-emerald)',
+              padding: 16,
+              borderRadius: 10,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12
+            }}>
+              <CheckCircle2 size={24} color="var(--accent-emerald)" />
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--accent-emerald)' }}>
+                  SOS BEACON TRANSMITTED
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--text-primary)' }}>
+                  Incident Ticket: <b>{dispatchedSos.sosId}</b>
+                </div>
               </div>
             </div>
 
-            {/* Note input */}
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
-                SITUATION BRIEF / NUMBER OF INDIVIDUALS
+            <div style={{ background: 'var(--bg-tertiary)', padding: 14, borderRadius: 10, fontSize: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>GPS Coordinates:</span>
+                <span style={{ fontWeight: 700 }}>{dispatchedSos.coords[0].toFixed(5)}, {dispatchedSos.coords[1].toFixed(5)}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Triage Urgency:</span>
+                <span style={{ fontWeight: 700, color: 'var(--accent-red)' }}>{dispatchedSos.category}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Offline Storage:</span>
+                <span style={{ fontWeight: 700, color: 'var(--accent-emerald)' }}>QUEUED & SAVED TO INDEXEDDB</span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                onClick={() => setDispatchedSos(null)}
+                className="btn-ghost"
+                style={{ flex: 1, justifyContent: 'center' }}
+              >
+                Send Another Alert
+              </button>
+              <button
+                onClick={onClose}
+                className="btn-primary"
+                style={{ flex: 1, justifyContent: 'center' }}
+              >
+                Close Window
+              </button>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSendSOS} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 6, color: 'var(--text-secondary)' }}>
+                TRIAGE CLASSIFICATION
               </label>
-              <textarea
-                rows={3}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="e.g. 4 individuals trapped on 2nd floor balcony, power cut off, water level 1.8m."
+              <select
+                value={triageCategory}
+                onChange={(e) => setTriageCategory(e.target.value)}
                 style={{
                   width: '100%',
-                  padding: 10,
+                  padding: '10px 12px',
                   borderRadius: 8,
-                  background: '#070a12',
-                  border: '1px solid var(--border-subtle)',
-                  color: '#ffffff',
-                  fontSize: 12,
+                  border: '1px solid var(--border-medium)',
+                  background: 'var(--bg-input)',
+                  color: 'var(--text-primary)',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: 13,
+                  fontWeight: 600
+                }}
+              >
+                <option value="TRAPPED_FLOOD">Trapped in Rising Water / Submerged Building</option>
+                <option value="MEDICAL_EMERGENCY">Critical Medical Emergency / Oxygen Needed</option>
+                <option value="INFANT_ELDERLY">Infants / Elderly Evacuation Assistance</option>
+                <option value="FOOD_WATER_DEPLETED">Potable Water & Food Rations Exhausted</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 6, color: 'var(--text-secondary)' }}>
+                CITIZEN CONTACT NUMBER / AADHAAR ID
+              </label>
+              <input
+                type="text"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+91-XXXXXXXXXX or Citizen ID"
+                required
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  borderRadius: 8,
+                  border: '1px solid var(--border-medium)',
+                  background: 'var(--bg-input)',
+                  color: 'var(--text-primary)',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: 13
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 6, color: 'var(--text-secondary)' }}>
+                ADDITIONAL FIELD NOTES (LANDMARKS / NUMBER OF CITIZENS)
+              </label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={3}
+                placeholder="e.g. 4 family members on 2nd floor terrace, flood level reaching staircase"
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  borderRadius: 8,
+                  border: '1px solid var(--border-medium)',
+                  background: 'var(--bg-input)',
+                  color: 'var(--text-primary)',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: 13,
                   resize: 'none'
                 }}
               />
             </div>
 
-            {/* Live Telemetry Metadata */}
-            <div style={{ background: 'rgba(0,0,0,0.35)', padding: 12, borderRadius: 8, border: '1px solid var(--border-subtle)', marginBottom: 18 }}>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                BEACON TELEMETRY PAYLOAD (TO BE SIGNED)
-              </div>
-              <div className="resq-sos-telemetry-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 11, color: 'var(--text-secondary)' }}>
-                <span>📍 GPS: {liveGps[0].toFixed(4)}°N, {liveGps[1].toFixed(4)}°E {isGpsLive ? '(Live Fix)' : '(Demo)'}</span>
-                <span>⛰️ DEM Elevation: 49.2m</span>
-                <span>🔋 Battery: 84%</span>
-                <span>📶 Relay: Zero-Cell P2P BLE Mesh</span>
-              </div>
+            <div style={{ background: 'var(--bg-tertiary)', padding: 10, borderRadius: 8, fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <MapPin size={14} color="var(--accent-cyan)" />
+              <span>GPS Pinpoint: <b>{liveGps[0].toFixed(4)}, {liveGps[1].toFixed(4)}</b> (Auto-attached)</span>
             </div>
 
-            {/* Trigger Button */}
             <button
               type="submit"
               disabled={isSending}
               className="btn-sos"
-              style={{ width: '100%', justifyContent: 'center', padding: '14px 0', fontSize: 15 }}
+              style={{
+                width: '100%',
+                justifyContent: 'center',
+                padding: '12px 18px',
+                fontSize: 14,
+                marginTop: 4
+              }}
             >
-              <Radio size={18} />
-              {isSending ? 'SIGNING & HOOKING TO P2P MESH...' : 'SIGN & TRANSMIT SOS BEACON'}
+              {isSending ? 'Transmitting Emergency Beacon...' : 'BROADCAST EMERGENCY SOS'}
             </button>
           </form>
-        ) : (
-          <div>
-            <div style={{ background: 'rgba(0, 245, 155, 0.1)', border: '1px solid rgba(0, 245, 155, 0.4)', borderRadius: 10, padding: 16, marginBottom: 16 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--accent-emerald)', fontWeight: 700, fontSize: 14 }}>
-                <CheckCircle2 size={18} />
-                <span>CRYPTOGRAPHIC SOS BEACON ACTIVE</span>
-              </div>
-              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
-                Your signed distress signal is actively hopping across nearby civilian devices and rescue gateways via Store-and-Forward P2P mesh.
-              </div>
-            </div>
-
-            {/* Proof Card */}
-            <div style={{ background: '#05070d', padding: 14, borderRadius: 8, border: '1px solid var(--border-subtle)', marginBottom: 16, fontFamily: 'var(--font-mono)', fontSize: 11 }}>
-              <div style={{ color: 'var(--accent-cyan)', marginBottom: 6 }}>// EIP-712 ECDSA Signature Proof</div>
-              <div style={{ color: '#94a3b8', wordBreak: 'break-all' }}>Hash: {signedPacket.hash}</div>
-              <div style={{ color: 'var(--text-muted)', wordBreak: 'break-all', marginTop: 4 }}>Sig: {signedPacket.signature.slice(0, 32)}...</div>
-              <div style={{ color: 'var(--accent-emerald)', marginTop: 6 }}>✓ Status: P2P Hop #1 (Civilian Peer A)</div>
-            </div>
-
-            <button
-              onClick={() => {
-                setSignedPacket(null);
-                onClose();
-              }}
-              className="btn-primary"
-              style={{ width: '100%', justifyContent: 'center' }}
-            >
-              Return to Evacuation Map
-            </button>
-          </div>
         )}
       </div>
     </div>
