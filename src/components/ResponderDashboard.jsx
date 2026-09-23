@@ -3,13 +3,10 @@ import {
   ShieldAlert, 
   Send, 
   MapPin, 
-  Radio, 
   Anchor, 
-  BatteryCharging,
-  CheckCircle2,
-  Users,
-  Activity,
-  PhoneCall
+  CheckCircle2, 
+  Users, 
+  Activity 
 } from 'lucide-react';
 import { playSound } from '../utils/audioEffects';
 
@@ -82,144 +79,119 @@ export default function ResponderDashboard({ soundEnabled }) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14, width: '100%' }}>
       
-      {/* Header Banner */}
-      <div className="glass-panel" style={{ padding: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-            <div style={{
-              width: 36,
-              height: 36,
-              borderRadius: 8,
-              background: 'linear-gradient(135deg, var(--accent-red), #ea580c)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#ffffff'
-            }}>
-              <ShieldAlert size={20} />
-            </div>
-            <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>
-              NDRF / SDRF Incident Triage & Rescue Dispatch
-            </h1>
-            <span className="tactical-badge badge-red">
-              112 EMERGENCY OPERATIONS
-            </span>
-          </div>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>
-            Real-time incident dispatch, rescue boat allocation, and civil defense mass broadcast console.
-          </p>
-        </div>
-
-        <div style={{ display: 'flex', gap: 10 }}>
-          <div className="code-pill" style={{ color: 'var(--accent-emerald)' }}>
-            <Activity size={12} /> 12 RESCUE BOATS ACTIVE
-          </div>
-        </div>
+      {/* Header */}
+      <div>
+        <h1 style={{ fontSize: 24, fontWeight: 900, color: 'var(--text-primary)', margin: 0 }}>
+          NDRF / SDRF Triage Center
+        </h1>
+        <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 3 }}>
+          112 Incident triage, rescue boat fleet dispatch & citizen flash alerts
+        </p>
       </div>
 
       {/* Responder Fleet Overview Metrics */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
+      <div className="resq-stat-grid">
         
-        <div className="glass-panel" style={{ padding: 18 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)' }}>PENDING HIGH-PRIORITY SOS</span>
-          <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--accent-red)', marginTop: 4 }}>
-            {sosQueue.filter(s => s.status === 'PENDING_DISPATCH').length} Active
+        <div className="resq-stat-card">
+          <div className="resq-stat-card-left">
+            <span className="resq-stat-label">HIGH PRIORITY SOS</span>
+            <div className="resq-stat-value" style={{ color: 'var(--accent-red)' }}>
+              {sosQueue.filter(s => s.status === 'PENDING_DISPATCH').length} Active
+            </div>
+            <span className="resq-stat-subtext">Immediate extraction</span>
           </div>
-          <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Immediate extraction needed</span>
+          <div className="resq-stat-icon-box" style={{ background: 'rgba(225, 29, 72, 0.1)', color: 'var(--accent-red)' }}>
+            <ShieldAlert size={20} />
+          </div>
         </div>
 
-        <div className="glass-panel" style={{ padding: 18 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)' }}>RESCUE BOATS DEPLOYED</span>
-          <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--accent-blue)', marginTop: 4 }}>
-            8 Units
+        <div className="resq-stat-card">
+          <div className="resq-stat-card-left">
+            <span className="resq-stat-label">RESCUE BOATS ACTIVE</span>
+            <div className="resq-stat-value" style={{ color: 'var(--accent-blue)' }}>
+              8 Units
+            </div>
+            <span className="resq-stat-subtext">Brahmaputra Basin</span>
           </div>
-          <span style={{ fontSize: 11, color: 'var(--accent-emerald)' }}>Brahmaputra & Bharalu Basin</span>
+          <div className="resq-stat-icon-box" style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--accent-blue)' }}>
+            <Anchor size={20} />
+          </div>
         </div>
 
-        <div className="glass-panel" style={{ padding: 18 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)' }}>EVACUEES SHELTERED TODAY</span>
-          <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--accent-emerald)', marginTop: 4 }}>
-            1,370 Citizens
+        <div className="resq-stat-card">
+          <div className="resq-stat-card-left">
+            <span className="resq-stat-label">EVACUEES SHELTERED</span>
+            <div className="resq-stat-value" style={{ color: 'var(--accent-emerald)' }}>
+              1,370
+            </div>
+            <span className="resq-stat-subtext">Across 3 Camps</span>
           </div>
-          <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Across 3 High-Ground Camps</span>
+          <div className="resq-stat-icon-box" style={{ background: 'rgba(5, 150, 105, 0.1)', color: 'var(--accent-emerald)' }}>
+            <Users size={20} />
+          </div>
         </div>
 
       </div>
 
       {/* SOS Queue & Dispatch Actions */}
-      <div className="glass-panel" style={{ padding: 24 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 800, marginBottom: 16 }}>
+      <div>
+        <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 6, color: 'var(--text-primary)' }}>
           Live Citizen SOS Dispatch Queue
-        </h2>
+        </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {sosQueue.map(item => {
             const isCritical = item.triage === 'RED_CRITICAL';
             return (
               <div
                 key={item.id}
+                className="resq-card-panel"
                 style={{
-                  background: 'var(--bg-tertiary)',
-                  border: isCritical ? '1px solid rgba(225, 29, 72, 0.4)' : '1px solid var(--border-subtle)',
-                  borderRadius: 10,
-                  padding: 16,
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                  gap: 14
+                  border: isCritical ? '1px solid rgba(225, 29, 72, 0.35)' : '1px solid var(--border-subtle)',
+                  padding: 12
                 }}
               >
-                <div style={{ maxWidth: 600 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                    <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)' }}>{item.id}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-primary)' }}>{item.id}</span>
                     {isCritical ? (
-                      <span className="tactical-badge badge-red">CRITICAL RESCUE</span>
+                      <span className="tactical-badge badge-red" style={{ fontSize: 8 }}>CRITICAL</span>
                     ) : (
-                      <span className="tactical-badge badge-amber">WARNING</span>
+                      <span className="tactical-badge badge-amber" style={{ fontSize: 8 }}>WARNING</span>
                     )}
-                    <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600 }}>{item.sender}</span>
                   </div>
-
-                  <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', margin: '4px 0' }}>
-                    {item.medicalNeed}
-                  </p>
-
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', gap: 12, marginTop: 4 }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <MapPin size={12} color="var(--accent-cyan)" /> {item.coords}
-                    </span>
-                    <span>Battery: {item.battery}</span>
-                  </div>
+                  <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>{item.sender.split(' ')[0]}</span>
                 </div>
 
-                {/* Action Buttons */}
-                <div>
-                  {item.status === 'PENDING_DISPATCH' ? (
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button
-                        onClick={() => handleDispatch(item.id, 'NDRF Motorized Boat #03')}
-                        className="btn-primary"
-                        style={{ padding: '8px 12px', fontSize: 11 }}
-                      >
-                        <Anchor size={13} />
-                        <span>Dispatch Boat</span>
-                      </button>
-                      <button
-                        onClick={() => handleDispatch(item.id, 'SDRF Quick Team')}
-                        className="btn-ghost"
-                        style={{ padding: '8px 12px', fontSize: 11 }}
-                      >
-                        <span>Dispatch Foot Unit</span>
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="tactical-badge badge-emerald">
-                      <CheckCircle2 size={12} /> {item.assignedUnit || 'EN ROUTE'}
-                    </div>
-                  )}
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', margin: '4px 0' }}>
+                  {item.medicalNeed}
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6, flexWrap: 'wrap', gap: 6 }}>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+                    📍 {item.coords.split('(')[0]}
+                  </div>
+
+                  <div>
+                    {item.status === 'PENDING_DISPATCH' ? (
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        <button
+                          onClick={() => handleDispatch(item.id, 'NDRF Boat #3')}
+                          className="resq-action-btn resq-action-primary"
+                          style={{ padding: '4px 8px', fontSize: 10, minHeight: 'unset' }}
+                        >
+                          <Anchor size={11} />
+                          <span>Dispatch Boat</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="tactical-badge badge-emerald" style={{ fontSize: 8 }}>
+                        <CheckCircle2 size={10} /> {item.assignedUnit || 'EN ROUTE'}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -228,47 +200,47 @@ export default function ResponderDashboard({ soundEnabled }) {
       </div>
 
       {/* Mass Civil Defense Broadcast */}
-      <div className="glass-panel" style={{ padding: 24 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 800, marginBottom: 12 }}>
-          Emergency Radio & Citizen Push Broadcast
-        </h2>
+      <div className="resq-card-panel">
+        <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 8, color: 'var(--text-primary)' }}>
+          Emergency Radio & Push Broadcast
+        </div>
 
         {broadcastSent && (
           <div style={{
             background: 'rgba(5, 150, 105, 0.12)',
             border: '1px solid var(--accent-emerald)',
             color: 'var(--accent-emerald)',
-            padding: 10,
+            padding: 8,
             borderRadius: 8,
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: 700,
-            marginBottom: 12
+            marginBottom: 8
           }}>
-            ✓ Emergency Flash Alert successfully transmitted to all local mesh nodes and SMS relays.
+            ✓ Emergency Alert transmitted to local mesh nodes and SMS gateway.
           </div>
         )}
 
-        <form onSubmit={handleBroadcast} style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <form onSubmit={handleBroadcast} style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           <input
             type="text"
             value={broadcastMessage}
             onChange={(e) => setBroadcastMessage(e.target.value)}
-            placeholder="e.g. FLASH WARNING: Brahmaputra expected to rise +1.4m by 18:00 IST. Evacuate Zone A immediately."
+            placeholder="e.g. Flash Warning: Evacuate Zone A immediately."
             style={{
               flex: 1,
-              minWidth: 280,
-              padding: '10px 14px',
+              minWidth: 180,
+              padding: '8px 10px',
               borderRadius: 8,
               border: '1px solid var(--border-medium)',
               background: 'var(--bg-input)',
               color: 'var(--text-primary)',
               fontFamily: 'var(--font-sans)',
-              fontSize: 13
+              fontSize: 12
             }}
           />
-          <button type="submit" className="btn-primary">
-            <Send size={14} />
-            <span>Transmit Flash Alert</span>
+          <button type="submit" className="resq-action-btn resq-action-primary" style={{ width: 'auto' }}>
+            <Send size={12} />
+            <span>Transmit</span>
           </button>
         </form>
       </div>

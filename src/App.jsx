@@ -85,9 +85,9 @@ export default function App() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', width: '100%' }}>
       
-      {/* Top Civic Intelligence Navigation Bar */}
+      {/* Top Navigation Bar */}
       <Navbar
         isBlackoutMode={isBlackoutMode}
         setIsBlackoutMode={setIsBlackoutMode}
@@ -106,92 +106,45 @@ export default function App() {
         <div className="resq-blackout-banner" style={{
           background: 'linear-gradient(90deg, var(--accent-red) 0%, #ea580c 100%)',
           color: '#ffffff',
-          padding: '8px 24px',
-          fontSize: 12,
-          fontWeight: 700,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 12,
-          boxShadow: '0 4px 20px rgba(225, 29, 72, 0.4)'
+          boxShadow: '0 2px 10px rgba(225, 29, 72, 0.3)'
         }}>
-          <CloudOff size={16} />
+          <CloudOff size={14} />
           <span className="resq-blackout-text">
-            TELECOM & POWER BLACKOUT ACTIVE — Dual-Engine running 100% on-device SRTM Elevation Routing & Local Radio Mesh
-          </span>
-          <span className="tactical-badge" style={{ background: 'rgba(0,0,0,0.3)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.4)' }}>
-            ZERO CLOUD DEPENDENCY
+            BLACKOUT ACTIVE — Dual-Engine running 100% on-device SRTM Elevation Routing & Local Radio Mesh
           </span>
         </div>
       )}
 
-      {/* Primary Tab Navigation & Telemetry Toolbar */}
-      <div className="resq-toolbar" style={{
-        maxWidth: 1600,
-        width: '100%',
-        margin: '0 auto',
-        padding: '16px 24px 0 24px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: 12
-      }}>
-        {/* Navigation Tabs */}
-        <div className="resq-tab-bar" style={{
-          display: 'flex',
-          gap: 6,
-          background: 'var(--tab-bar-bg)',
-          padding: 4,
-          borderRadius: 12,
-          border: '1px solid var(--border-subtle)',
-          overflowX: 'auto',
-          maxWidth: '100%'
-        }}>
+      {/* Primary Tab Bar */}
+      <div className="resq-toolbar">
+        <div className="resq-tab-bar">
           {[
-            { id: 'MAP', label: 'Evacuation Map & Timeline', icon: <Map size={15} /> },
-            { id: 'FLOOD_AI', label: 'AI Flood Warning & Inundation', icon: <Waves size={15} /> },
-            { id: 'RESPONDER', label: 'NDRF / SDRF Triage Center', icon: <ShieldAlert size={15} /> },
-            { id: 'TREASURY', label: 'Emergency Relief Treasury', icon: <Building2 size={15} /> },
-            { id: 'OFFLINE_PACKS', label: 'Offline District Packs', icon: <HardDrive size={15} /> },
-            { id: 'MESH', label: 'Local Radio Mesh Relay', icon: <Radio size={15} /> },
-            { id: 'IMPACT', label: 'Resilience Cycle', icon: <Activity size={15} /> },
-            { id: 'RESEARCH', label: 'Research & Citations', icon: <BookOpen size={15} /> }
+            { id: 'MAP', label: 'Evacuation Map', icon: <Map size={13} /> },
+            { id: 'FLOOD_AI', label: 'Flood Forecast', icon: <Waves size={13} /> },
+            { id: 'RESPONDER', label: 'NDRF Triage', icon: <ShieldAlert size={13} /> },
+            { id: 'TREASURY', label: 'Relief Treasury', icon: <Building2 size={13} /> },
+            { id: 'OFFLINE_PACKS', label: 'Offline Packs', icon: <HardDrive size={13} /> },
+            { id: 'MESH', label: 'Radio Mesh', icon: <Radio size={13} /> },
+            { id: 'IMPACT', label: 'Resilience', icon: <Activity size={13} /> },
+            { id: 'RESEARCH', label: 'References', icon: <BookOpen size={13} /> }
           ].map(tab => (
             <button
               key={tab.id}
               onClick={() => handleTabChange(tab.id)}
-              title={tab.label}
-              className={`btn-ghost resq-tab ${activeTab === tab.id ? 'active' : ''}`}
-              style={{
-                fontSize: 12,
-                fontWeight: activeTab === tab.id ? 700 : 500,
-                borderBottom: activeTab === tab.id ? '2px solid var(--accent-blue)' : '2px solid transparent',
-                whiteSpace: 'nowrap'
-              }}
+              className={`resq-tab-btn ${activeTab === tab.id ? 'active' : ''}`}
             >
               {tab.icon}
-              <span className="resq-tab-label">{tab.label}</span>
+              <span>{tab.label}</span>
             </button>
           ))}
-        </div>
-
-        {/* Status Telemetry Pills */}
-        <div className="resq-status-pills" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div className="code-pill">
-            SRTM DEM: 30m HIGH-RES
-          </div>
-          <div className="code-pill" style={{ color: 'var(--accent-emerald)' }}>
-            LOCAL INDEXEDDB CACHE
-          </div>
-          <div className="code-pill">
-            CWC GAUGE TELEMETRY
-          </div>
         </div>
       </div>
 
       {/* Main View Area */}
-      <main className="resq-main" style={{ maxWidth: 1600, width: '100%', margin: '0 auto', padding: '16px 24px 24px 24px', flex: 1 }}>
+      <main className="resq-main">
         {activeTab === 'MAP' && (
           <EvacuationMap
             theme={theme}

@@ -141,7 +141,7 @@ export default function EvacuationMap({
     const map = mapInstanceRef.current;
     if (!map || !effectivePathCoords || effectivePathCoords.length === 0) return;
     const bounds = L.latLngBounds(effectivePathCoords);
-    map.fitBounds(bounds, { padding: [60, 60], maxZoom: 15 });
+    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
   };
 
   const triggerAutoLocation = () => {
@@ -190,24 +190,16 @@ export default function EvacuationMap({
     const dest = activeShelters.find(s => s.id === selectedShelterId) || activeShelters[0];
     if (!dest) return;
 
-    fetchOSSRMRouteSafe(userPos, dest.coords).then(res => {
+    fetchOSRMStreetRoute(userPos, dest.coords).then(res => {
       if (!isCancelled && res) {
         setStreetSnappedRoute(res);
       }
-    });
+    }).catch(() => {});
 
     return () => {
       isCancelled = true;
     };
   }, [userPos, selectedShelterId, activeShelters]);
-
-  async function fetchOSSRMRouteSafe(start, dest) {
-    try {
-      return await fetchOSRMStreetRoute(start, dest);
-    } catch {
-      return null;
-    }
-  }
 
   const effectivePathCoords = streetSnappedRoute?.pathCoords || routeInfo.pathCoords;
   const effectiveDistanceKm = streetSnappedRoute?.distanceKm || routeInfo.distanceKm;
@@ -285,12 +277,12 @@ export default function EvacuationMap({
       }).addTo(map);
 
       polygon.bindPopup(`
-        <div style="font-family: Outfit, sans-serif; font-size: 13px; line-height: 1.4;">
+        <div style="font-family: Outfit, sans-serif; font-size: 12px; line-height: 1.4;">
           <b style="color: ${isFlooded ? '#e11d48' : '#0284c7'};">${zone.name}</b><br/>
           <span>Base Elevation: ${zone.elevation}m</span><br/>
-          <span>Submergence Threshold: +${zone.floodThreshold}m</span><br/>
+          <span>Threshold: +${zone.floodThreshold}m</span><br/>
           <b style="color: ${isFlooded ? '#e11d48' : '#059669'};">
-            ${isFlooded ? '🚨 STATUS: ACTIVELY SUBMERGED' : '✅ STATUS: DRY / PASSABLE'}
+            ${isFlooded ? '🚨 STATUS: SUBMERGED' : '✅ STATUS: DRY / PASSABLE'}
           </b>
         </div>
       `);
@@ -309,10 +301,10 @@ export default function EvacuationMap({
         }).addTo(map);
 
         poly.bindPopup(`
-          <div style="font-family: Outfit, sans-serif; font-size: 13px;">
+          <div style="font-family: Outfit, sans-serif; font-size: 12px;">
             <b style="color: ${tZone.color};">${tZone.name}</b><br/>
-            <span>Forecast Depth: <b>${tZone.depthMeters} meters</b></span><br/>
-            <span>Timeline Step: <b>${activeTimeline.timeDisplay}</b></span>
+            <span>Forecast Depth: <b>${tZone.depthMeters}m</b></span><br/>
+            <span>Step: <b>${activeTimeline.timeDisplay}</b></span>
           </div>
         `);
         floodLayersRef.current.push(poly);
@@ -341,26 +333,24 @@ export default function EvacuationMap({
             background: ${isSelected ? 'linear-gradient(135deg, #059669, #0284c7)' : 'rgba(15, 23, 42, 0.9)'};
             border: 2px solid ${isSelected ? '#059669' : '#0284c7'};
             color: #ffffff;
-            border-radius: 8px;
-            padding: 4px 8px;
-            font-size: 11px;
+            border-radius: 6px;
+            padding: 2px 6px;
+            font-size: 10px;
             font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 6px;
-            box-shadow: 0 4px 15px ${isSelected ? 'rgba(5, 150, 105, 0.5)' : 'rgba(0,0,0,0.3)'};
+            gap: 4px;
+            box-shadow: 0 2px 8px ${isSelected ? 'rgba(5, 150, 105, 0.5)' : 'rgba(0,0,0,0.3)'};
             white-space: nowrap;
             cursor: pointer;
           ">
             <span>⛰️</span>
-            <span>${shelter.name}</span>
-            <span style="background: rgba(0,0,0,0.4); padding: 1px 4px; border-radius: 4px; font-size: 10px; color: #38bdf8;">
-              +${shelter.elevation}m
-            </span>
+            <span>${shelter.name.split(' ')[0]}</span>
+            <span style="color: #38bdf8; font-size: 9px;">+${shelter.elevation}m</span>
           </div>
         `,
-        iconSize: [180, 30],
-        iconAnchor: [90, 15]
+        iconSize: [120, 24],
+        iconAnchor: [60, 12]
       });
 
       const marker = L.marker(shelter.coords, { icon: customIcon }).addTo(map);
@@ -371,12 +361,11 @@ export default function EvacuationMap({
       });
 
       marker.bindPopup(`
-        <div style="font-family: Outfit, sans-serif; font-size: 13px;">
-          <h4 style="margin: 0 0 6px 0; color: #059669; font-size: 14px;">${shelter.name}</h4>
-          <p style="margin: 0 0 4px 0;"><b>Elevation:</b> ${shelter.elevation}m High-Ground Sanctuary</p>
-          <p style="margin: 0 0 4px 0;"><b>Capacity:</b> ${shelter.currentOccupants} / ${shelter.capacity} people</p>
-          <p style="margin: 0 0 4px 0;"><b>Facilities:</b> ${shelter.resources.join(', ')}</p>
-          <p style="margin: 0; color: #0284c7; font-size: 11px;">Admin: ${shelter.adminUnit}</p>
+        <div style="font-family: Outfit, sans-serif; font-size: 12px;">
+          <h4 style="margin: 0 0 4px 0; color: #059669; font-size: 13px;">${shelter.name}</h4>
+          <p style="margin: 0 0 2px 0;">Elevation: <b>${shelter.elevation}m</b></p>
+          <p style="margin: 0 0 2px 0;">Capacity: <b>${shelter.currentOccupants} / ${shelter.capacity}</b></p>
+          <p style="margin: 0; color: #0284c7; font-size: 10px;">${shelter.adminUnit}</p>
         </div>
       `);
 
@@ -396,28 +385,28 @@ export default function EvacuationMap({
     const userIcon = L.divIcon({
       className: 'custom-user-marker',
       html: `
-        <div style="position: relative; width: 24px; height: 24px;">
+        <div style="position: relative; width: 20px; height: 20px;">
           <div style="
             position: absolute;
             top: 0; left: 0;
-            width: 24px; height: 24px;
+            width: 20px; height: 20px;
             border-radius: 50%;
             background: rgba(37, 99, 235, 0.4);
             animation: pulse 1.8s infinite;
           "></div>
           <div style="
             position: absolute;
-            top: 4px; left: 4px;
-            width: 16px; height: 16px;
+            top: 3px; left: 3px;
+            width: 14px; height: 14px;
             border-radius: 50%;
             background: #2563eb;
             border: 2px solid #ffffff;
-            box-shadow: 0 0 10px #2563eb;
+            box-shadow: 0 0 8px #2563eb;
           "></div>
         </div>
       `,
-      iconSize: [24, 24],
-      iconAnchor: [12, 12]
+      iconSize: [20, 20],
+      iconAnchor: [10, 10]
     });
 
     const marker = L.marker(userPos, { icon: userIcon, draggable: true }).addTo(map);
@@ -427,15 +416,6 @@ export default function EvacuationMap({
       setUserPos([position.lat, position.lng]);
       if (soundEnabled) playSound('click');
     });
-
-    marker.bindPopup(`
-      <div style="font-family: Outfit, sans-serif; font-size: 13px;">
-        <b style="color: #2563eb;">YOUR CITIZEN LOCATION</b><br/>
-        <span>Lat: ${userPos[0].toFixed(4)}, Lon: ${userPos[1].toFixed(4)}</span><br/>
-        <span>Elevation Routing: <b>${isBlackoutMode ? 'Offline On-Device Engine' : 'Web2 Live Routing'}</b></span><br/>
-        <span style="color: var(--accent-emerald); font-size: 11px;">💡 Drag pin anywhere to test evacuation route</span>
-      </div>
-    `);
 
     userMarkerRef.current = marker;
   }, [userPos, isBlackoutMode, soundEnabled]);
@@ -457,29 +437,27 @@ export default function EvacuationMap({
             background: ${isBlocking ? 'rgba(225, 29, 72, 0.95)' : 'rgba(217, 119, 6, 0.95)'};
             border: 2px solid #ffffff;
             border-radius: 50%;
-            width: 28px;
-            height: 28px;
+            width: 24px;
+            height: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
-            box-shadow: 0 0 14px ${isBlocking ? 'rgba(225, 29, 72, 0.7)' : 'rgba(217, 119, 6, 0.7)'};
+            font-size: 12px;
+            box-shadow: 0 0 10px ${isBlocking ? 'rgba(225, 29, 72, 0.7)' : 'rgba(217, 119, 6, 0.7)'};
           ">
             ⚠️
           </div>
         `,
-        iconSize: [28, 28],
-        iconAnchor: [14, 14]
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
       });
 
       const marker = L.marker(h.coords, { icon }).addTo(map);
       marker.bindPopup(`
-        <div style="font-family: Outfit, sans-serif; font-size: 13px;">
-          <b style="color: #e11d48;">ROAD OBSTRUCTION / FLOOD HAZARD</b><br/>
+        <div style="font-family: Outfit, sans-serif; font-size: 12px;">
+          <b style="color: #e11d48;">ROAD OBSTRUCTION</b><br/>
           <b>${h.title}</b><br/>
-          <span>Reported by: ${h.reportedBy}</span><br/>
-          <span style="color: #059669;">✓ Verified Field Reports: ${h.verifiedReports}</span><br/>
-          <span style="color: var(--accent-cyan);">Adaptive Elevation Route Avoidance Active</span>
+          <span style="color: var(--accent-cyan);">Avoidance Routing Active</span>
         </div>
       `);
 
@@ -501,7 +479,7 @@ export default function EvacuationMap({
 
     const polyline = L.polyline(effectivePathCoords, {
       color: '#059669',
-      weight: 5,
+      weight: 4,
       opacity: 0.9,
       lineCap: 'round',
       lineJoin: 'round'
@@ -534,17 +512,18 @@ export default function EvacuationMap({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%' }}>
       
-      {/* 48-Hour Flood Timeline Prediction & Interactive Simulation Bar */}
-      <div className="glass-panel" style={{ padding: '12px 14px', border: '1px solid var(--border-cyan)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 10 }}>
-          
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 200 }}>
+      {/* 48-Hour Flood Timeline Forecast Bar (Zero-Overflow Class Layout) */}
+      <div className="resq-card-panel" style={{ border: '1px solid var(--border-cyan)' }}>
+        
+        {/* Header Row */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <div style={{
-              width: 30,
-              height: 30,
-              borderRadius: 8,
+              width: 26,
+              height: 26,
+              borderRadius: 6,
               background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))',
               display: 'flex',
               alignItems: 'center',
@@ -552,77 +531,63 @@ export default function EvacuationMap({
               color: '#ffffff',
               flexShrink: 0
             }}>
-              <Waves size={16} />
+              <Waves size={14} />
             </div>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
-                <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-primary)' }}>
-                  Flood Inundation & Timeline
-                </span>
-                <span className="tactical-badge badge-red" style={{ fontSize: 9, padding: '2px 6px' }}>
-                  WHERE & WHEN
-                </span>
-              </div>
-              <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>
-                Scrub timeline to visualize floodwater rise and safe route bypasses.
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)' }}>
+                Flood Timeline
+              </span>
+              <span className="tactical-badge badge-red" style={{ fontSize: 8, padding: '1px 4px' }}>
+                48h Forecast
               </span>
             </div>
           </div>
 
-          {/* Timeline Play / Pause / Recenter */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {/* Action Buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <button
               onClick={() => {
                 if (soundEnabled) playSound('click');
                 setIsSimPlaying(!isSimPlaying);
               }}
               className="btn-primary"
-              style={{ padding: '5px 10px', fontSize: 11 }}
+              style={{ padding: '4px 8px', fontSize: 10, minHeight: 'unset' }}
             >
-              {isSimPlaying ? <Pause size={12} /> : <Play size={12} />}
+              {isSimPlaying ? <Pause size={10} /> : <Play size={10} />}
               <span>{isSimPlaying ? 'Pause' : 'Play'}</span>
             </button>
 
             <button
               onClick={handleFitRoute}
               className="btn-ghost"
-              style={{ padding: '5px 8px', fontSize: 11 }}
-              title="Fit entire evacuation path in view"
+              style={{ padding: '4px 8px', fontSize: 10, minHeight: 'unset' }}
+              title="Fit route"
             >
-              <Navigation size={12} />
+              <Navigation size={10} />
               <span>Fit</span>
             </button>
           </div>
-
         </div>
 
-        {/* Timeline Step Buttons */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))',
-          gap: 6
-        }}>
+        {/* Timeline 6-Button Grid (Exact 3-col on Mobile, 6-col on Desktop) */}
+        <div className="resq-timeline-grid">
           {TIMELINE_FORECAST_STEPS.map((step, idx) => {
             const isSelected = idx === timelineIndex;
             return (
               <button
                 key={step.hourOffset}
                 onClick={() => handleTimelineStepClick(idx)}
+                className="resq-timeline-step-btn"
                 style={{
-                  background: isSelected ? 'rgba(2, 132, 199, 0.15)' : 'var(--bg-tertiary)',
-                  border: isSelected ? '2px solid var(--accent-cyan)' : '1px solid var(--border-subtle)',
-                  borderRadius: 8,
-                  padding: '6px 4px',
-                  cursor: 'pointer',
-                  textAlign: 'center',
-                  transition: 'all 0.15s ease'
+                  background: isSelected ? 'rgba(2, 132, 199, 0.18)' : 'var(--bg-tertiary)',
+                  border: isSelected ? '2px solid var(--accent-cyan)' : '1px solid var(--border-subtle)'
                 }}
               >
-                <div style={{ fontSize: 9, fontWeight: 700, color: isSelected ? 'var(--accent-cyan)' : 'var(--text-muted)' }}>
+                <div className="resq-timeline-step-label" style={{ color: isSelected ? 'var(--accent-cyan)' : 'var(--text-muted)' }}>
                   {step.label}
                 </div>
-                <div style={{ fontSize: 12, fontWeight: 800, color: isSelected ? 'var(--accent-red)' : 'var(--text-primary)', marginTop: 2 }}>
-                  +{step.waterRiseMeters}m Rise
+                <div className="resq-timeline-step-val" style={{ color: isSelected ? 'var(--accent-red)' : 'var(--text-primary)' }}>
+                  +{step.waterRiseMeters}m
                 </div>
               </button>
             );
@@ -630,151 +595,103 @@ export default function EvacuationMap({
         </div>
       </div>
 
-      {/* Map Control Toolbar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
-        
-        {/* District Pack Switcher */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)' }}>DISTRICT:</span>
+      {/* District Selector & Action Controls */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, width: '100%' }}>
+        <div style={{ display: 'flex', gap: 6, width: '100%' }}>
           <select
             value={selectedPackId}
             onChange={(e) => handleSelectPack(e.target.value)}
             style={{
-              padding: '6px 12px',
+              flex: 1,
+              minWidth: 0,
+              padding: '6px 8px',
               borderRadius: 8,
               border: '1px solid var(--border-medium)',
-              background: 'var(--bg-secondary)',
+              background: 'var(--bg-card)',
               color: 'var(--text-primary)',
               fontFamily: 'var(--font-sans)',
-              fontWeight: 600,
-              fontSize: 12
+              fontWeight: 700,
+              fontSize: 11,
+              boxShadow: 'var(--shadow-card)'
             }}
           >
             {REGIONAL_PACKS.map(p => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
           </select>
-        </div>
 
-        {/* Action Controls: GPS Pinpoint, Report Hazard */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <button
             onClick={triggerAutoLocation}
             className="btn-ghost"
-            style={{ padding: '6px 12px', fontSize: 12 }}
+            style={{ padding: '6px 10px', fontSize: 11, flexShrink: 0 }}
           >
-            <Crosshair size={14} color="var(--accent-cyan)" />
-            <span>{gpsStatus === 'LOCATING' ? 'Locating...' : 'Locate Me'}</span>
-          </button>
-
-          <button
-            onClick={() => {
-              if (soundEnabled) playSound('click');
-              setShowAddHazardModal(true);
-            }}
-            className="btn-ghost"
-            style={{ padding: '6px 12px', fontSize: 12, borderColor: 'var(--accent-amber)', color: 'var(--accent-amber)' }}
-          >
-            <PlusCircle size={14} />
-            <span>Report Road Submersion</span>
+            <Crosshair size={13} color="var(--accent-cyan)" />
+            <span>Locate</span>
           </button>
         </div>
 
+        <button
+          onClick={() => {
+            if (soundEnabled) playSound('click');
+            setShowAddHazardModal(true);
+          }}
+          className="resq-action-btn resq-action-secondary"
+          style={{ borderColor: 'var(--accent-amber)', color: 'var(--accent-amber)', width: '100%' }}
+        >
+          <PlusCircle size={13} />
+          <span>Report Road Submersion</span>
+        </button>
       </div>
 
-      {/* Main Map Container */}
-      <div style={{ position: 'relative', width: '100%', height: 520, borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-medium)', boxShadow: 'var(--shadow-card)' }}>
+      {/* Map Container */}
+      <div className="resq-map-frame">
         <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />
+      </div>
 
-        {/* Overlay Telemetry Card (Top Left of Map on desktop, clean responsive card on mobile) */}
-        <div className="glass-panel resq-map-overlay-top" style={{
-          position: 'absolute',
-          top: 14,
-          left: 14,
-          zIndex: 400,
-          background: 'var(--bg-glass)',
-          backdropFilter: 'blur(12px)',
-          border: '1px solid var(--border-subtle)',
-          padding: '12px 16px',
-          borderRadius: 14,
-          maxWidth: 320,
-          boxShadow: 'var(--shadow-card)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)' }}>LIVE ROUTE TELEMETRY</span>
-            <span className="tactical-badge badge-emerald" style={{ fontSize: 9 }}>
-              <CheckCircle2 size={10} /> HIGH GROUND SAFE
-            </span>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 4 }}>
-            <span style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)' }}>
+      {/* Route Telemetry & ETA Stats Stack (Reference Mobile Style) */}
+      <div className="resq-stat-grid">
+        
+        {/* Metric 1: Distance & Walking ETA */}
+        <div className="resq-stat-card">
+          <div className="resq-stat-card-left">
+            <span className="resq-stat-label">EVACUATION ROUTE DISTANCE</span>
+            <div className="resq-stat-value" style={{ color: 'var(--accent-blue)' }}>
               {effectiveDistanceKm} km
-            </span>
-            <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-              (~{effectiveEstMinutes} mins walking)
-            </span>
-          </div>
-
-          <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 4 }}>
-            Average Elevation: <b style={{ color: 'var(--accent-emerald)' }}>+{routeInfo.avgElevation}m</b> (Gain: +{routeInfo.elevationGain}m)
-          </div>
-
-          {routeInfo.routeNotes && routeInfo.routeNotes.length > 0 && (
-            <div style={{ marginTop: 8, fontSize: 10, color: 'var(--text-muted)', borderTop: '1px solid var(--border-subtle)', paddingTop: 6 }}>
-              {routeInfo.routeNotes[0]}
             </div>
-          )}
+            <span className="resq-stat-subtext">
+              ~{effectiveEstMinutes} mins walking to ridge
+            </span>
+          </div>
+          <div className="resq-stat-icon-box" style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--accent-blue)' }}>
+            <Navigation size={20} />
+          </div>
         </div>
 
-        {/* Sector Inundation ETA Countdown Card */}
-        <div className="glass-panel resq-map-overlay-bottom" style={{
-          position: 'absolute',
-          bottom: 14,
-          left: 14,
-          zIndex: 400,
-          background: 'var(--bg-glass)',
-          backdropFilter: 'blur(12px)',
-          border: '1px solid var(--border-subtle)',
-          padding: '10px 14px',
-          borderRadius: 14,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-          boxShadow: 'var(--shadow-card)'
-        }}>
-          <div style={{
-            width: 34,
-            height: 34,
-            borderRadius: 10,
-            background: 'rgba(225, 29, 72, 0.12)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--accent-red)',
-            flexShrink: 0
-          }}>
-            <Clock size={16} />
+        {/* Metric 2: Elevation & Ridge Safety */}
+        <div className="resq-stat-card">
+          <div className="resq-stat-card-left">
+            <span className="resq-stat-label">AVERAGE SAFE ELEVATION</span>
+            <div className="resq-stat-value" style={{ color: 'var(--accent-emerald)' }}>
+              +{routeInfo.avgElevation} m
+            </div>
+            <span className="resq-stat-subtext" style={{ color: 'var(--accent-emerald)', fontWeight: 700 }}>
+              ✓ High ground safety confirmed
+            </span>
           </div>
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent-red)' }}>
-              BREACH ETA: ZONE 2 INUNDATION IN 1h 45m
-            </div>
-            <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>
-              Water rise: +{waterLevel}m • Peak crest expected at 19:30 IST
-            </div>
+          <div className="resq-stat-icon-box" style={{ background: 'rgba(5, 150, 105, 0.1)', color: 'var(--accent-emerald)' }}>
+            <Mountain size={20} />
           </div>
         </div>
 
       </div>
 
-      {/* High-Ground Evacuation Shelter Cards */}
+      {/* Designated High-Ground Shelters Stack */}
       <div>
-        <h3 style={{ fontSize: 15, fontWeight: 800, marginBottom: 10, color: 'var(--text-primary)' }}>
-          Designated Elevated High-Ground Sanctuaries ({activeShelters.length} Available)
-        </h3>
+        <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 6, color: 'var(--text-primary)' }}>
+          Designated Elevated Sanctuaries ({activeShelters.length})
+        </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {activeShelters.map((shelter) => {
             const isSelected = shelter.id === selectedShelterId;
             return (
@@ -784,34 +701,26 @@ export default function EvacuationMap({
                   if (soundEnabled) playSound('click');
                   setSelectedShelterId(shelter.id);
                 }}
-                className="glass-panel"
+                className="resq-card-panel"
                 style={{
-                  padding: 16,
                   cursor: 'pointer',
                   border: isSelected ? '2px solid var(--accent-emerald)' : '1px solid var(--border-subtle)',
                   background: isSelected ? 'rgba(5, 150, 105, 0.08)' : 'var(--bg-card)',
-                  transition: 'all 0.15s ease'
+                  padding: '10px 12px'
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
-                  <h4 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
-                    {shelter.name}
-                  </h4>
-                  <span className="tactical-badge badge-emerald">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {shelter.name}
+                    </div>
+                    <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>
+                      Capacity: <b>{shelter.currentOccupants}/{shelter.capacity}</b> ({Math.round((shelter.currentOccupants/shelter.capacity)*100)}%)
+                    </div>
+                  </div>
+                  <span className="tactical-badge badge-emerald" style={{ fontSize: 9, flexShrink: 0 }}>
                     +{shelter.elevation}m
                   </span>
-                </div>
-
-                <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 8 }}>
-                  Capacity: <b>{shelter.currentOccupants} / {shelter.capacity}</b> ({Math.round((shelter.currentOccupants/shelter.capacity)*100)}% Full)
-                </div>
-
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                  {shelter.resources.slice(0, 3).map((res, i) => (
-                    <span key={i} style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}>
-                      {res}
-                    </span>
-                  ))}
                 </div>
               </div>
             );
@@ -819,30 +728,27 @@ export default function EvacuationMap({
         </div>
       </div>
 
-      {/* Report Road Submersion Modal */}
+      {/* Report Hazard Modal */}
       {showAddHazardModal && (
         <div style={{
           position: 'fixed',
           top: 0, left: 0, right: 0, bottom: 0,
           background: 'rgba(0,0,0,0.6)',
-          backdropFilter: 'blur(8px)',
+          backdropFilter: 'blur(6px)',
           zIndex: 1100,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: 20
+          padding: 12
         }}>
-          <div className="glass-panel" style={{ width: '100%', maxWidth: 440, padding: 24 }}>
-            <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 12 }}>
-              Report Road Submersion / Hazard
+          <div className="resq-card-panel" style={{ width: '100%', maxWidth: 400, padding: 18 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 8 }}>
+              Report Road Submersion
             </h3>
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 16 }}>
-              Reports are saved locally to IndexedDB when offline and broadcast to emergency responders.
-            </p>
 
-            <form onSubmit={handleAddHazardSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <form onSubmit={handleAddHazardSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div>
-                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 4 }}>
+                <label style={{ display: 'block', fontSize: 10, fontWeight: 700, marginBottom: 2 }}>
                   HAZARD CATEGORY
                 </label>
                 <select
@@ -850,46 +756,45 @@ export default function EvacuationMap({
                   onChange={(e) => setNewHazardType(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '8px 12px',
+                    padding: '8px 10px',
                     borderRadius: 8,
                     border: '1px solid var(--border-medium)',
                     background: 'var(--bg-input)',
                     color: 'var(--text-primary)',
                     fontFamily: 'var(--font-sans)',
-                    fontSize: 13
+                    fontSize: 12
                   }}
                 >
                   <option value="ROAD_SUBMERGED">Road Inundated / Submerged</option>
                   <option value="LANDSLIDE">Mudslide / Hill Debris</option>
                   <option value="POWER_LINE_DOWN">Fallen Electric Wire</option>
-                  <option value="BRIDGE_COLLAPSE">Culvert / Bridge Impassable</option>
                 </select>
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 4 }}>
-                  LOCATION DETAILS & WATER DEPTH
+                <label style={{ display: 'block', fontSize: 10, fontWeight: 700, marginBottom: 2 }}>
+                  LOCATION & WATER DEPTH
                 </label>
                 <input
                   type="text"
                   value={newHazardDesc}
                   onChange={(e) => setNewHazardDesc(e.target.value)}
-                  placeholder="e.g. Underpass flooded with ~1.5m standing water"
+                  placeholder="e.g. Flooded with ~1.5m water"
                   required
                   style={{
                     width: '100%',
-                    padding: '8px 12px',
+                    padding: '8px 10px',
                     borderRadius: 8,
                     border: '1px solid var(--border-medium)',
                     background: 'var(--bg-input)',
                     color: 'var(--text-primary)',
                     fontFamily: 'var(--font-sans)',
-                    fontSize: 13
+                    fontSize: 12
                   }}
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+              <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
                 <button
                   type="button"
                   onClick={() => setShowAddHazardModal(false)}
@@ -903,7 +808,7 @@ export default function EvacuationMap({
                   className="btn-primary"
                   style={{ flex: 1, justifyContent: 'center' }}
                 >
-                  Submit Report
+                  Submit
                 </button>
               </div>
             </form>
