@@ -537,59 +537,60 @@ export default function EvacuationMap({
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       
       {/* 48-Hour Flood Timeline Prediction & Interactive Simulation Bar */}
-      <div className="glass-panel" style={{ padding: '16px 20px', border: '1px solid var(--border-cyan)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 12 }}>
+      <div className="glass-panel" style={{ padding: '12px 14px', border: '1px solid var(--border-cyan)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 10 }}>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 200 }}>
             <div style={{
-              width: 32,
-              height: 32,
+              width: 30,
+              height: 30,
               borderRadius: 8,
               background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#ffffff'
+              color: '#ffffff',
+              flexShrink: 0
             }}>
-              <Waves size={18} />
+              <Waves size={16} />
             </div>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-primary)' }}>
-                  Flood Inundation & Timeline Prediction Map
+              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+                <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-primary)' }}>
+                  Flood Inundation & Timeline
                 </span>
-                <span className="tactical-badge badge-red">
-                  WHERE & WHEN FLOODS OCCUR
+                <span className="tactical-badge badge-red" style={{ fontSize: 9, padding: '2px 6px' }}>
+                  WHERE & WHEN
                 </span>
               </div>
-              <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-                Scrub through timeline steps to visualize rising floodwaters and dynamic evacuation route bypasses.
+              <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>
+                Scrub timeline to visualize floodwater rise and safe route bypasses.
               </span>
             </div>
           </div>
 
           {/* Timeline Play / Pause / Recenter */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <button
               onClick={() => {
                 if (soundEnabled) playSound('click');
                 setIsSimPlaying(!isSimPlaying);
               }}
               className="btn-primary"
-              style={{ padding: '6px 14px', fontSize: 12 }}
+              style={{ padding: '5px 10px', fontSize: 11 }}
             >
-              {isSimPlaying ? <Pause size={13} /> : <Play size={13} />}
-              <span>{isSimPlaying ? 'Pause' : 'Play Timeline'}</span>
+              {isSimPlaying ? <Pause size={12} /> : <Play size={12} />}
+              <span>{isSimPlaying ? 'Pause' : 'Play'}</span>
             </button>
 
             <button
               onClick={handleFitRoute}
               className="btn-ghost"
-              style={{ padding: '6px 10px', fontSize: 12 }}
+              style={{ padding: '5px 8px', fontSize: 11 }}
               title="Fit entire evacuation path in view"
             >
-              <Navigation size={13} />
-              <span>Fit Route</span>
+              <Navigation size={12} />
+              <span>Fit</span>
             </button>
           </div>
 
@@ -598,7 +599,7 @@ export default function EvacuationMap({
         {/* Timeline Step Buttons */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))',
           gap: 6
         }}>
           {TIMELINE_FORECAST_STEPS.map((step, idx) => {
@@ -611,16 +612,16 @@ export default function EvacuationMap({
                   background: isSelected ? 'rgba(2, 132, 199, 0.15)' : 'var(--bg-tertiary)',
                   border: isSelected ? '2px solid var(--accent-cyan)' : '1px solid var(--border-subtle)',
                   borderRadius: 8,
-                  padding: '8px 6px',
+                  padding: '6px 4px',
                   cursor: 'pointer',
                   textAlign: 'center',
                   transition: 'all 0.15s ease'
                 }}
               >
-                <div style={{ fontSize: 10, fontWeight: 700, color: isSelected ? 'var(--accent-cyan)' : 'var(--text-muted)' }}>
+                <div style={{ fontSize: 9, fontWeight: 700, color: isSelected ? 'var(--accent-cyan)' : 'var(--text-muted)' }}>
                   {step.label}
                 </div>
-                <div style={{ fontSize: 13, fontWeight: 800, color: isSelected ? 'var(--accent-red)' : 'var(--text-primary)', marginTop: 2 }}>
+                <div style={{ fontSize: 12, fontWeight: 800, color: isSelected ? 'var(--accent-red)' : 'var(--text-primary)', marginTop: 2 }}>
                   +{step.waterRiseMeters}m Rise
                 </div>
               </button>
