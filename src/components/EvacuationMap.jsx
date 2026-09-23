@@ -686,8 +686,8 @@ export default function EvacuationMap({
       <div style={{ position: 'relative', width: '100%', height: 520, borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-medium)', boxShadow: 'var(--shadow-card)' }}>
         <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />
 
-        {/* Overlay Telemetry Card (Top Left of Map) */}
-        <div style={{
+        {/* Overlay Telemetry Card (Top Left of Map on desktop, clean responsive card on mobile) */}
+        <div className="glass-panel resq-map-overlay-top" style={{
           position: 'absolute',
           top: 14,
           left: 14,
@@ -696,13 +696,13 @@ export default function EvacuationMap({
           backdropFilter: 'blur(12px)',
           border: '1px solid var(--border-subtle)',
           padding: '12px 16px',
-          borderRadius: 12,
+          borderRadius: 14,
           maxWidth: 320,
           boxShadow: 'var(--shadow-card)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)' }}>LIVE ROUTE TELEMETRY</span>
-            <span className="tactical-badge badge-emerald">
+            <span className="tactical-badge badge-emerald" style={{ fontSize: 9 }}>
               <CheckCircle2 size={10} /> HIGH GROUND SAFE
             </span>
           </div>
@@ -727,8 +727,8 @@ export default function EvacuationMap({
           )}
         </div>
 
-        {/* Sector Inundation ETA Countdown Card (Bottom Left of Map) */}
-        <div style={{
+        {/* Sector Inundation ETA Countdown Card */}
+        <div className="glass-panel resq-map-overlay-bottom" style={{
           position: 'absolute',
           bottom: 14,
           left: 14,
@@ -737,21 +737,22 @@ export default function EvacuationMap({
           backdropFilter: 'blur(12px)',
           border: '1px solid var(--border-subtle)',
           padding: '10px 14px',
-          borderRadius: 10,
+          borderRadius: 14,
           display: 'flex',
           alignItems: 'center',
           gap: 10,
           boxShadow: 'var(--shadow-card)'
         }}>
           <div style={{
-            width: 32,
-            height: 32,
-            borderRadius: 8,
+            width: 34,
+            height: 34,
+            borderRadius: 10,
             background: 'rgba(225, 29, 72, 0.12)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: 'var(--accent-red)'
+            color: 'var(--accent-red)',
+            flexShrink: 0
           }}>
             <Clock size={16} />
           </div>

@@ -1,26 +1,30 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   RESQ — Responsive Design System (Mobile & Desktop Precision)
-   Breakpoints: 1200px (compact), 900px (small desktop), 768px (tablet), 480px (mobile), 360px (compact mobile)
+   RESQ — Responsive Layout Engine
+   Precision responsiveness matching modern mobile dashboards (360px to 4K)
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Global Touch Targets & Containers ──────────────────────────────────── */
+/* ── Global Viewport Constraints ────────────────────────────────────────── */
 html, body {
   max-width: 100vw;
   overflow-x: hidden;
 }
 
 @media screen and (max-width: 768px) {
-  button, a, select {
-    min-height: 36px;
+  button, a, select, input {
+    min-height: 42px;
   }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   NAVBAR RESPONSIVENESS
+   NAVBAR (Mobile Standard)
    ═══════════════════════════════════════════════════════════════════════════ */
+.resq-navbar {
+  padding: 12px 24px;
+}
+
 @media screen and (max-width: 900px) {
   .resq-navbar {
-    padding: 8px 12px !important;
+    padding: 10px 14px !important;
   }
 
   .resq-navbar-inner {
@@ -36,29 +40,24 @@ html, body {
     order: 3;
     width: 100% !important;
     justify-content: center !important;
-    margin-top: 2px;
+    margin-top: 4px;
   }
 
   .resq-mode-switcher button {
     flex: 1;
     justify-content: center !important;
     font-size: 11px !important;
-    padding: 6px 8px !important;
+    padding: 7px 10px !important;
   }
 
   .resq-nav-tools {
-    gap: 4px !important;
-  }
-
-  .resq-sos-btn {
-    padding: 6px 12px !important;
-    font-size: 11px !important;
+    gap: 6px !important;
   }
 }
 
 @media screen and (max-width: 480px) {
   .resq-brand-text {
-    font-size: 16px !important;
+    font-size: 17px !important;
   }
 
   .resq-pitchdeck-label {
@@ -72,13 +71,18 @@ html, body {
   .resq-mode-label-short {
     display: inline !important;
   }
+
+  .resq-sos-btn {
+    padding: 7px 12px !important;
+    font-size: 11px !important;
+  }
 }
 
 .resq-mode-label-short {
   display: none;
 }
 
-/* ── Blackout Banner ─────────────────────────────────────────────────────── */
+/* ── Blackout Notice Banner ─────────────────────────────────────────────── */
 .resq-blackout-banner {
   word-break: break-word;
   line-height: 1.4;
@@ -86,16 +90,16 @@ html, body {
 
 @media screen and (max-width: 900px) {
   .resq-blackout-banner {
-    padding: 6px 10px !important;
-    font-size: 10px !important;
+    padding: 8px 12px !important;
+    font-size: 11px !important;
     flex-direction: column !important;
     gap: 4px !important;
     text-align: center !important;
   }
 
   .resq-blackout-banner .resq-blackout-text {
-    font-size: 10px !important;
-    line-height: 1.3 !important;
+    font-size: 11px !important;
+    line-height: 1.35 !important;
   }
 
   .resq-blackout-banner .tactical-badge {
@@ -104,11 +108,15 @@ html, body {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   APP TOOLBAR & TAB BAR
+   APP TOOLBAR & TAB SCROLLER (Mobile Touch Optimized)
    ═══════════════════════════════════════════════════════════════════════════ */
+.resq-toolbar {
+  padding: 16px 24px 0 24px;
+}
+
 @media screen and (max-width: 900px) {
   .resq-toolbar {
-    padding: 8px 10px 0 10px !important;
+    padding: 10px 12px 0 12px !important;
     flex-direction: column !important;
     align-items: stretch !important;
     gap: 8px !important;
@@ -120,7 +128,8 @@ html, body {
     scrollbar-width: none;
     flex-wrap: nowrap !important;
     width: 100% !important;
-    justify-content: flex-start !important;
+    padding: 4px !important;
+    gap: 4px !important;
   }
 
   .resq-tab-bar::-webkit-scrollbar {
@@ -128,8 +137,10 @@ html, body {
   }
 
   .resq-tab.btn-ghost {
-    padding: 7px 10px !important;
+    padding: 8px 12px !important;
     flex-shrink: 0 !important;
+    font-size: 12px !important;
+    border-radius: 8px !important;
   }
 
   .resq-status-pills {
@@ -139,32 +150,40 @@ html, body {
 
 @media screen and (max-width: 480px) {
   .resq-main {
-    padding: 10px 10px 20px 10px !important;
-  }
-
-  .resq-tab-label {
-    display: none !important;
-  }
-
-  .resq-tab.btn-ghost {
-    padding: 8px 10px !important;
-    min-width: 38px !important;
-    justify-content: center !important;
+    padding: 12px 12px 28px 12px !important;
   }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   TIMELINE FORECAST CARDS & EVACUATION MAP
+   MOBILE STAT CARDS & METRIC GRIDS (Reference Standard)
    ═══════════════════════════════════════════════════════════════════════════ */
 @media screen and (max-width: 600px) {
-  .resq-timeline-header {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 8px !important;
+  .stat-card {
+    padding: 14px 16px !important;
+    border-radius: 16px !important;
   }
 
-  .resq-timeline-badge {
-    font-size: 9px !important;
-    padding: 2px 6px !important;
+  .stat-card-value {
+    font-size: 24px !important;
+  }
+
+  .stat-icon-box {
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 12px !important;
+  }
+
+  .resq-map-overlay-top {
+    position: static !important;
+    max-width: 100% !important;
+    margin-bottom: 8px;
+    border-radius: 14px !important;
+  }
+
+  .resq-map-overlay-bottom {
+    position: static !important;
+    max-width: 100% !important;
+    margin-top: 8px;
+    border-radius: 14px !important;
   }
 }
