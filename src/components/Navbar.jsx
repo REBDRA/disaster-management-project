@@ -22,7 +22,6 @@ export default function Navbar({
   isNetworkOnline,
   activePeersCount,
   onOpenSos,
-  onOpenDeck,
   soundEnabled,
   setSoundEnabled
 }) {
@@ -94,19 +93,6 @@ export default function Navbar({
               title="Toggle Light/Dark Theme"
             >
               {theme === 'light' ? <Moon size={13} /> : <Sun size={13} color="var(--accent-amber)" />}
-            </button>
-
-            {/* Deck Modal Trigger */}
-            <button
-              onClick={() => {
-                if (soundEnabled) playSound('click');
-                onOpenDeck();
-              }}
-              className="btn-ghost"
-              style={{ padding: '5px 8px', minHeight: 'unset' }}
-              title="Pitch Deck"
-            >
-              <BookOpen size={13} color="var(--accent-cyan)" />
             </button>
 
             {/* Audio Toggle */}

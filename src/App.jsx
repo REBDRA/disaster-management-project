@@ -11,11 +11,12 @@ import {
   Waves,
   Database,
   Wifi,
-  Sparkles
+  Sparkles,
+  Cpu
 } from 'lucide-react';
 import Navbar from './components/Navbar';
 import EvacuationMap from './components/EvacuationMap';
-import FloodForecastDashboard from './components/FloodForecastDashboard';
+import AiDisasterIntelligence from './components/AiDisasterIntelligence';
 import MeshSimulator from './components/MeshSimulator';
 import ReliefFundTreasury from './components/ReliefFundTreasury';
 import ResponderDashboard from './components/ResponderDashboard';
@@ -23,7 +24,6 @@ import OfflineDistrictPacks from './components/OfflineDistrictPacks';
 import ImpactAndResilience from './components/ImpactAndResilience';
 import ResearchReferences from './components/ResearchReferences';
 import SosModal from './components/SosModal';
-import SlideDeckModal from './components/SlideDeckModal';
 import { INITIAL_HAZARDS } from './utils/geoRouting';
 import { registerServiceWorker } from './utils/offlineManager';
 import { playSound } from './utils/audioEffects';
@@ -46,9 +46,8 @@ export default function App() {
   const [hazards, setHazards] = useState(INITIAL_HAZARDS);
   const [soundEnabled, setSoundEnabled] = useState(true);
   
-  // Modals
+  // Citizen Emergency SOS Modal
   const [isSosOpen, setIsSosOpen] = useState(false);
-  const [isDeckOpen, setIsDeckOpen] = useState(false);
 
   // Sync theme attribute to <html> and localStorage
   useEffect(() => {
@@ -96,7 +95,6 @@ export default function App() {
         isNetworkOnline={isNetworkOnline}
         activePeersCount={6}
         onOpenSos={() => setIsSosOpen(true)}
-        onOpenDeck={() => setIsDeckOpen(true)}
         soundEnabled={soundEnabled}
         setSoundEnabled={setSoundEnabled}
       />
@@ -123,7 +121,7 @@ export default function App() {
         <div className="resq-tab-bar">
           {[
             { id: 'MAP', label: 'Evacuation Map', icon: <Map size={13} /> },
-            { id: 'FLOOD_AI', label: 'Flood Forecast', icon: <Waves size={13} /> },
+            { id: 'DISASTER_AI', label: 'Grok AI Disaster Warning', icon: <Cpu size={13} /> },
             { id: 'RESPONDER', label: 'NDRF Triage', icon: <ShieldAlert size={13} /> },
             { id: 'TREASURY', label: 'Relief Treasury', icon: <Building2 size={13} /> },
             { id: 'OFFLINE_PACKS', label: 'Offline Packs', icon: <HardDrive size={13} /> },
@@ -160,8 +158,8 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'FLOOD_AI' && (
-          <FloodForecastDashboard
+        {activeTab === 'DISASTER_AI' && (
+          <AiDisasterIntelligence
             soundEnabled={soundEnabled}
             selectedTimelineHour={0}
             onSelectTimelineHour={(hourOffset) => {
@@ -221,13 +219,6 @@ export default function App() {
         onSosBroadcast={(payload) => {
           console.log('Dispatched Web2 Citizen SOS:', payload);
         }}
-      />
-
-      {/* Slide Deck Modal */}
-      <SlideDeckModal
-        isOpen={isDeckOpen}
-        onClose={() => setIsDeckOpen(false)}
-        soundEnabled={soundEnabled}
       />
 
     </div>
