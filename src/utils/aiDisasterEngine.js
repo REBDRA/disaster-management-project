@@ -6,8 +6,8 @@ function getSecureKey() {
     if (typeof window !== 'undefined' && window.localStorage?.getItem('resq_ai_api_key')) {
       return window.localStorage.getItem('resq_ai_api_key');
     }
-    if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GROQ_API_KEY) {
-      return import.meta.env.VITE_GROQ_API_KEY;
+    if (typeof import.meta !== 'undefined' && (import.meta.env?.VITE_AI_API_KEY || import.meta.env?.VITE_API_KEY)) {
+      return import.meta.env.VITE_AI_API_KEY || import.meta.env.VITE_API_KEY;
     }
     const cipher = [77,89,65,117,98,112,29,115,73,95,109,65,27,111,108,104,107,31,70,123,72,65,79,111,125,109,78,83,72,25,108,115,66,126,94,64,111,69,103,123,83,67,90,27,115,30,102,111,95,26,88,29,82,120,107,31];
     return cipher.map(x => String.fromCharCode(x ^ 42)).join('');

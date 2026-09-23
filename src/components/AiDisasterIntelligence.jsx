@@ -82,7 +82,7 @@ export default function AiDisasterIntelligence({ soundEnabled }) {
   };
 
   const activeHazard = currentDiagnosis || activePreset;
-  const analysis = activeHazard.aiAnalysis || activeHazard.grokAnalysis || {};
+  const analysis = activeHazard.aiAnalysis || {};
 
   const getThreatBadge = (threat) => {
     switch (threat) {
@@ -211,7 +211,7 @@ export default function AiDisasterIntelligence({ soundEnabled }) {
             .filter(p => selectedDisasterTypeId === 'MULTI_HAZARD' || p.disasterType === selectedDisasterTypeId)
             .map(preset => {
               const isSelected = activeHazard.id === preset.id;
-              const pAnalysis = preset.aiAnalysis || preset.grokAnalysis || {};
+              const pAnalysis = preset.aiAnalysis || {};
               return (
                 <div
                   key={preset.id}
