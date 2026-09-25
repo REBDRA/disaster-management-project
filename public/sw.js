@@ -1,24 +1,9 @@
 // RESQ Offline Service Worker
 // Enables 100% offline access to evacuation maps, elevation models, and offline packs
 
-const CACHE_NAME = 'resq-offline-v2.1';
-const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/src/main.jsx',
-  '/src/App.jsx',
-  '/src/index.css'
-];
+const CACHE_NAME = 'resq-offline-v3.0';
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('[ResQ ServiceWorker] Pre-caching static assets for offline readiness');
-      return cache.addAll(STATIC_ASSETS).catch((err) => {
-        console.warn('[ResQ ServiceWorker] Precache failed, will cache on demand:', err);
-      });
-    })
-  );
   self.skipWaiting();
 });
 
@@ -41,6 +26,13 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   // Pass through non-GET requests
   if (event.request.method !== 'GET') return;
+
+  const url = event.request.url;
+
+  // In development, never intercept Vite internal or HMR endpoints
+  if (url.includes('localhost') || url.includes('127.0.0.1') || url.includes('@vite') || url.includes('?t=') || url.includes('hot-update')) {
+    return;
+  }
 
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
